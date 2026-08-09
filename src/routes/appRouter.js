@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
 
 const HomePage = lazy(() => import("../pages/Home/HomePage"));
+const AboutPage = lazy(() => import("../pages/About/AboutPage"));
 
 const PageTransition = ({ children }) => {
   return (
@@ -21,6 +22,15 @@ const AppRouter = () => {
           element={
             <PageTransition>
               <HomePage />
+            </PageTransition>
+          }
+        />
+
+        <Route
+          path="/about"
+          element={
+            <PageTransition>
+              <AboutPage />
             </PageTransition>
           }
         />
