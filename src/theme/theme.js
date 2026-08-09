@@ -351,48 +351,48 @@ export const theme = extendTheme({
   semanticTokens: {
     colors: {
       "bg-body": {
-        default: "#f8fafc",
-        _dark: "#0f172a",
+        default: "#f5f5f5",
+        _dark: "#0a0a0a",
       },
-      "bg-sidebar": {
-        default: "#ffffff",
-        _dark: "#1e293b",
+      "bg-sidbar": {
+        default: "#fafafae0",
+        _dark: "#0d0d0de8",
       },
       "bg-navbar": {
-        default: "#ffffff",
-        _dark: "#0f172a",
+        default: "#fafafa",
+        _dark: "#0d0d0d",
       },
       "bg-card": {
         default: "#ffffff",
-        _dark: "#1e293b",
+        _dark: "#1a1a1a",
       },
       "bg-hover": {
-        default: "#f1f5f9",
-        _dark: "#334155",
+        default: "#e5e5e5",
+        _dark: "#2a2a2a",
       },
       "bg-active": {
-        default: "#e0f2fe",
-        _dark: "#1e3a8a",
+        default: "#d4d4d4",
+        _dark: "#333333",
       },
       "text-primary": {
-        default: "#0f172a",
-        _dark: "#f1f5f9",
+        default: "#1a1a1a",
+        _dark: "#f5f5f5",
       },
       "text-secondary": {
-        default: "#475569",
-        _dark: "#94a3b8",
+        default: "#404040",
+        _dark: "#b3b3b3",
       },
       "text-muted": {
-        default: "#94a3b8",
-        _dark: "#64748b",
+        default: "#737373",
+        _dark: "#808080",
       },
       "border-color": {
-        default: "#e2e8f0",
-        _dark: "#334155",
+        default: "#d4d4d4",
+        _dark: "#333333",
       },
       "border-active": {
-        default: "#3b82f6",
-        _dark: "#60a5fa",
+        default: "#404040",
+        _dark: "#808080",
       },
       "shadow-sm": {
         default: "0 1px 2px 0 rgb(0 0 0 / 0.05)",

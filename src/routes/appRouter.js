@@ -1,4 +1,4 @@
-import React, { lazy, Subspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
 
@@ -14,7 +14,7 @@ const PageTransition = ({ children }) => {
 
 const AppRouter = () => {
   return (
-    <Subspense>
+    <Suspense>
       <Routes>
         <Route
           path="/"
@@ -25,7 +25,7 @@ const AppRouter = () => {
           }
         />
       </Routes>
-    </Subspense>
+    </Suspense>
   );
 };
 

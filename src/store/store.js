@@ -9,10 +9,14 @@ const useAppStore = create(
       isSidebarOpen: false,
 
       setLanguage: (lang) => set({ language: lang }),
-      toggleLanguage: () =>
-        set((state) => ({
-          language: state.language === "ar" ? "en" : "ar",
-        })),
+
+      toggleLanguage: () => {
+        const current = get().language;
+        const newLang = current === "en" ? "ar " : "en";
+        set({ language: newLang });
+        document.dir = newLang === "ar" ? "rtl" : "ltr";
+        document.documentElement.lang = newLang;
+      },
 
       setTheme: (theme) => set({ theme: theme }),
       toggleTheme: () =>
@@ -33,7 +37,6 @@ const useAppStore = create(
       partialize: (state) => ({
         language: state.language,
         theme: state.theme,
-        user: state.user,
       }),
     },
   ),

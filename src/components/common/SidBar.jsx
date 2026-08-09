@@ -1,21 +1,19 @@
+import React from "react";
 import {
-  Box,
   VStack,
-  Text,
   Icon,
+  Text,
+  Box,
+  Flex,
+  Divider,
+  Badge,
   Drawer,
   DrawerBody,
   DrawerContent,
   DrawerOverlay,
   useBreakpointValue,
-  Divider,
-  Avatar,
-  Badge,
-  IconButton,
-  HStack,
-  Switch,
 } from "@chakra-ui/react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FiHome,
   FiCalendar,
@@ -24,26 +22,15 @@ import {
   FiUser,
   FiClock,
   FiInfo,
-  FiSettings,
-  FiLogOut,
-  FiMoon,
-  FiSun,
-  FiGlobe,
 } from "react-icons/fi";
 import useAppStore from "../../store/store";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    language,
-    theme,
-    toggleLanguage,
-    toggleTheme,
-    isSidebarOpen,
-    closeSidebar,
-    user,
-  } = useAppStore();
+  const { language, isSidebarOpen, closeSidebar } = useAppStore();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const words = {
     ar: {
@@ -63,6 +50,7 @@ const Sidebar = () => {
       version: "الإصدار 1.0.0",
       switchLanguage: "English",
       switchTheme: "الوضع المظلم",
+      menu: "القائمة",
     },
     en: {
       appName: "ELKOOD Clinic",
@@ -81,34 +69,30 @@ const Sidebar = () => {
       version: "Version 1.0.0",
       switchLanguage: "العربية",
       switchTheme: "Dark Mode",
+      menu: "Menu",
     },
   };
 
-  const menu_items = [
-    { path: "/", icon: FiHome, key: "home" },
-    { path: "/dashboard", icon: FiCalendar, key: "dashboard" },
-    { path: "/appointments", icon: FiUsers, key: "appointments" },
-    { path: "/add-appointment", icon: FiUserPlus, key: "newAppointment" },
-    { path: "/patients", icon: FiUser, key: "patients" },
-    { path: "/history", icon: FiClock, key: "history" },
-    { path: "/about", icon: FiInfo, key: "about" },
+  const menuItems = [
+    { icon: FiHome, label: "home", path: "/" },
+    { icon: FiCalendar, label: "dashboard", path: "/dashboard" },
+    { icon: FiUsers, label: "appointments", path: "/appointments" },
+    { icon: FiUserPlus, label: "newAppointment", path: "/add-appointment" },
+    { icon: FiUser, label: "patients", path: "/patients" },
+    { icon: FiClock, label: "history", path: "/history" },
+    { icon: FiInfo, label: "about", path: "/about" },
   ];
 
-  const SIDEBAR_BOTTOM_LINKS = [
-    { path: "/profile", icon: FiUser, key: "profile" },
-    { path: "/settings", icon: FiSettings, key: "settings" },
-    { path: "/logout", icon: FiLogOut, key: "logout" },
-  ];
-
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const t = words[language] || words.ar;
+  const t = (key) => {
+    return words[language]?.[key] || words.en[key] || key;
+  };
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
-  const handleLinkClick = (path) => {
+  const handleNavigation = (path) => {
     if (path === "/logout") {
       console.log("Logout clicked");
       return;
@@ -119,149 +103,121 @@ const Sidebar = () => {
 
   const SidebarContent = () => (
     <Box
-      w="260px"
+      w="100%"
       h="100%"
-      bg="bg-sidbar"
-      borderLeft={!isMobile ? "1px" : "none"}
-      borderColor="bodrer-color"
+      px={4}
       py={4}
-      px={3}
-      overflowY="auto"
+      bg="bg-sidbar"
+      transition="all 0.3s"
       display="flex"
       flexDirection="column">
-      <VStack spacing={3} mb={6} px={2}>
-        <Avatar
-          size="xl"
-          name={user.name}
-          src={user.avatar}
-          border="2px solid"
-          borderColor="teal.400"
-        />
-        <Text fontWeight="bold" fontSize="lg" color="text-primary">
-          {user.name}
+      {/* Logo Section */}
+      <Flex
+        align="center"
+        mb={6}
+        pb={4}
+        borderBottom="1px"
+        borderColor="border-color">
+        <Box
+          w="36px"
+          h="36px"
+          bg="brand.500"
+          borderRadius="md"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexShrink={0}>
+          <Text color="white" fontWeight="bold" fontSize="lg">
+            E
+          </Text>
+        </Box>
+        <Text
+          fontSize="lg"
+          fontWeight="bold"
+          color="brand.500"
+          ml={3}
+          letterSpacing="tight">
+          {t("appName")}
         </Text>
-        <Badge
-          colorScheme={user.isOnline ? "green" : "gray"}
-          fontSize="sm"
-          px={3}
-          py={1}
-          borderRadius="full">
-          {user.isOnline ? t.online : t.offline}
-        </Badge>
-      </VStack>
+      </Flex>
 
-      <Divider mb={4} />
+      <Divider mb={4} borderColor="border-color" />
 
-      <VStack align="stretch" gap={1} flex="1">
-        {menu_items.map((item) => {
+      {/* Menu Label */}
+      <Text
+        fontSize="xs"
+        fontWeight="semibold"
+        color="text-muted"
+        px={2}
+        py={2}
+        letterSpacing="wider">
+        {t("menu")}
+      </Text>
+
+      {/* Main Menu */}
+      <VStack spacing={1} align="stretch" flex="1">
+        {menuItems.map((item) => {
           const active = isActive(item.path);
-          const label = t[item.key] || item.key;
+          const label = t(item.label);
 
           return (
             <Box
               key={item.path}
-              onClick={() => handleLinkClick(item.path)}
+              px={3}
+              py={2}
+              borderRadius="md"
               cursor="pointer"
+              bg={active ? "bg-active" : "transparent"}
+              color={active ? "text-active" : "text-secondary"}
+              _hover={{
+                bg: active ? "bg-active" : "bg-hover",
+              }}
+              transition="all 0.2s"
+              onClick={() => handleNavigation(item.path)}
               display="flex"
               alignItems="center"
-              gap={3}
-              px={4}
-              py={3}
-              borderRadius="lg"
-              transition="all 0.2s"
-              bg={active ? "bg-active" : "transparent"}
-              fontWeight={active ? "bold" : "normal"}
-              borderRight={active ? "4px solid" : "4px solid transparent"}
-              borderRightColor={active ? "teal.400" : "transparent"}>
-              <Icon as={item.icon} boxSize={5} />
-              <Text fontSize="md">{label}</Text>
-              {item.key === "appointments" && (
+              position="relative">
+              <Icon
+                as={item.icon}
+                mr={3}
+                w={4}
+                h={4}
+                color={active ? "brand.500" : "inherit"}
+              />
+              <Text fontSize="sm" fontWeight={active ? "semibold" : "medium"}>
+                {label}
+              </Text>
+              {item.label === "appointments" && (
                 <Badge ml="auto" colorScheme="red" borderRadius="full" px={2}>
                   3
                 </Badge>
+              )}
+              {active && (
+                <Box
+                  position="absolute"
+                  right={0}
+                  w="3px"
+                  h="20px"
+                  bg="brand.500"
+                  borderRadius="full"
+                />
               )}
             </Box>
           );
         })}
       </VStack>
 
-      <Divider my={4} />
-
-      <VStack align="stretch" gap={1}>
-        <HStack px={4} py={2} justifyContent="space-between">
-          <HStack gap={3}>
-            <Icon as={FiGlobe} boxSize={5} color="text-primary" />
-            <Text fontSize="md" color="text-primary">
-              {t.switchLanguage}
-            </Text>
-          </HStack>
-          <IconButton
-            aria-label="Toggle language"
-            icon={
-              <Text fontSize="sm" fontWeight="bold">
-                {language === "ar" ? "EN" : "AR"}
-              </Text>
-            }
-            onClick={toggleLanguage}
-            size="sm"
-            variant="ghost"
-            colorScheme="teal"
-          />
-        </HStack>
-
-        <HStack px={4} py={2} justifyContent="space-between">
-          <HStack gap={3}>
-            <Icon
-              as={theme === "light" ? FiMoon : FiSun}
-              boxSize={5}
-              color="text-primary"
-            />
-            <Text fontSize="md" color="text-primary">
-              {t.switchTheme}
-            </Text>
-          </HStack>
-          <Switch
-            isChecked={theme === "dark"}
-            onChange={toggleTheme}
-            colorScheme="teal"
-            size="md"
-          />
-        </HStack>
-
-        {SIDEBAR_BOTTOM_LINKS.map((item) => {
-          const active = isActive(item.path);
-          const label = t[item.key] || item.key;
-
-          return (
-            <Box
-              key={item.path}
-              onClick={() => handleLinkClick(item.path)}
-              cursor="pointer"
-              display="flex"
-              alignItems="center"
-              gap={3}
-              px={4}
-              py={3}
-              borderRadius="lg"
-              transition="all 0.2s"
-              bg={active ? "bg-active" : "transparent"}
-              fontWeight={active ? "bold" : "normal"}>
-              <Icon as={item.icon} boxSize={5} />
-              <Text fontSize="md">{label}</Text>
-            </Box>
-          );
-        })}
-      </VStack>
+      <Divider my={4} borderColor="border-color" />
 
       <Text
         fontSize="xs"
-        color="gray.400"
+        color="text-muted"
         textAlign="center"
         mt={4}
         pt={4}
         borderTop="1px"
-        borderColor="bg-color">
-        {t.version}
+        borderColor="border-color">
+        {t("version")}
       </Text>
     </Box>
   );
@@ -273,11 +229,7 @@ const Sidebar = () => {
         placement="right"
         onClose={closeSidebar}
         size="xs">
-        <DrawerOverlay
-          bg="blackAlpha.600"
-          backdropFilter="blur(4px)"
-          zIndex="overlay"
-        />
+        <DrawerOverlay backdropFilter="blur(8px)" zIndex="overlay" />
         <DrawerContent zIndex="modal" dir={language === "ar" ? "rtl" : "ltr"}>
           <DrawerBody p={0}>
             <SidebarContent />
@@ -291,11 +243,13 @@ const Sidebar = () => {
     <Box
       position="fixed"
       top="72px"
-      right={0}
-      w="260px"
-      h="calc(100vh - 72px)"
+      right={language === "ar" ? 0 : "auto"}
+      left={language === "en" ? 0 : "auto"}
+      w={isMobile ? "40%" : "22%"}
+      h="100%"
       bg="bg-body"
-      borderLeft="1px"
+      borderLeft={language === "ar" ? "1px" : "none"}
+      borderRight={language === "en" ? "1px" : "none"}
       borderColor="border-color"
       zIndex={100}
       overflowY="auto"
