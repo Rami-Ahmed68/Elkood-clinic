@@ -4,6 +4,7 @@ import { Box } from "@chakra-ui/react";
 
 const HomePage = lazy(() => import("../pages/Home/HomePage"));
 const AboutPage = lazy(() => import("../pages/About/AboutPage"));
+const DashBoardPage = lazy(() => import("../pages/Dash/DashBoardPage"));
 
 const PageTransition = ({ children }) => {
   return (
@@ -31,6 +32,15 @@ const AppRouter = () => {
           element={
             <PageTransition>
               <AboutPage />
+            </PageTransition>
+          }
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            <PageTransition>
+              <DashBoardPage />
             </PageTransition>
           }
         />
