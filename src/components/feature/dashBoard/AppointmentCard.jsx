@@ -30,7 +30,6 @@ const AppointmentCard = ({
   showActions = true,
 }) => {
   const { language } = useAppStore();
-  const isRTL = language === "ar";
 
   const words = {
     ar: {
@@ -281,7 +280,8 @@ const AppointmentCard = ({
         boxShadow: "md",
         borderColor: "brand.300",
       }}
-      w="100%">
+      w="100%"
+      dir={language === "ar" ? "rtl" : "ltr"}>
       <Box pb={1.5} mb={1.5} borderBottom="1px solid" borderColor={borderColor}>
         <Flex justify="space-between" align="center" gap={2}>
           <Box flex="1" minW={0}>
@@ -298,7 +298,7 @@ const AppointmentCard = ({
           </Box>
 
           {showActions && (
-            <Flex flexShrink={0} direction={isRTL ? "row" : "row"}>
+            <Flex flexShrink={0}>
               <Tooltip label={t.tooltips.edit} placement="top" hasArrow>
                 <IconButton
                   aria-label={t.editAppointment}
@@ -320,7 +320,7 @@ const AppointmentCard = ({
                   variant="ghost"
                   color={deleteIconColor}
                   _hover={{ bg: deleteIconHoverBg }}
-                  onClick={() => onDelete(patient.id, status)}
+                  onClick={() => onDelete && onDelete(patient.id, status)}
                   minW="22px"
                   h="22px"
                 />
@@ -329,11 +329,7 @@ const AppointmentCard = ({
           )}
         </Flex>
 
-        <Flex
-          gap={0.5}
-          flexWrap="wrap"
-          mt={0.5}
-          direction={isRTL ? "row-reverse" : "row"}>
+        <Flex gap={0.5} flexWrap="wrap" mt={0.5}>
           <Tooltip label={t.tooltips.appointmentId} placement="top" hasArrow>
             <Badge
               bg="gray.200"
@@ -377,12 +373,7 @@ const AppointmentCard = ({
         </Flex>
       </Box>
 
-      <Flex
-        gap={1.5}
-        flexWrap="wrap"
-        align="center"
-        direction={isRTL ? "row-reverse" : "row"}
-        justifyContent={isRTL ? "flex-end" : "flex-start"}>
+      <Flex gap={1.5} flexWrap="wrap" align="center">
         {detailItems.map((item, index) => (
           <React.Fragment key={index}>{item}</React.Fragment>
         ))}

@@ -21,6 +21,7 @@ import helpers from "../../utils/helpers";
 import AppointmentCard from "../../components/feature/dashBoard/AppointmentCard";
 import DashboardSkeleton from "../../components/feature/Skeleton/DashboardSkeleton";
 import AddAppointmentModal from "../../components/feature/dashBoard/AddAppointmentModal";
+import EditAppointmentModal from "../../components/feature/dashBoard/EditAppointmentModal";
 import DeleteConfirmModal from "../../components/feature/dashBoard/DeleteConfirmModal";
 import showToast from "../../components/common/toast";
 
@@ -34,8 +35,10 @@ const DashBoardPage = () => {
   const [tempStatusFilter, setTempStatusFilter] = useState("all");
   const [tempTypeFilter, setTempTypeFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedEditPatient, setSelectedEditPatient] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
 
   React.useEffect(() => {
@@ -173,7 +176,8 @@ const DashBoardPage = () => {
       refreshTooltip: "تحديث البيانات",
       addTooltip: "إضافة حجز جديد",
       searchTooltip: "البحث باسم المريض",
-      // رسائل Toast
+      editSuccess: "تم التعديل",
+      editSuccessDesc: (name) => `تم تعديل حجز ${name}`,
       filterApplied: "تم تطبيق الفلتر",
       filterAppliedDesc: "تم تطبيق الفلتر والبحث بنجاح",
       refreshSuccess: "تم التحديث",
@@ -211,7 +215,8 @@ const DashBoardPage = () => {
       refreshTooltip: "Refresh data",
       addTooltip: "Add new appointment",
       searchTooltip: "Search by patient name",
-      // Toast Messages
+      editSuccess: "Updated",
+      editSuccessDesc: (name) => `Updated appointment for ${name}`,
       filterApplied: "Filter Applied",
       filterAppliedDesc: "Filter and search applied successfully",
       refreshSuccess: "Refreshed",
@@ -358,6 +363,37 @@ const DashBoardPage = () => {
     }));
 
     showToast.success(t.addSuccess, t.addSuccessDesc(patient.name));
+  };
+
+  // ===== دوال التعديل =====
+  const handleEditClick = (patient) => {
+    setSelectedEditPatient(patient);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditPatient = (updatedPatient) => {
+    // تحديث المريض في القائمة
+    setPatients((prev) => {
+      const newPatients = { ...prev };
+      // البحث عن المريض في جميع القوائم
+      for (const status of ["upcoming", "waiting", "current"]) {
+        const index = newPatients[status].findIndex(
+          (p) => p.id === selectedEditPatient.id,
+        );
+        if (index !== -1) {
+          newPatients[status][index] = {
+            ...newPatients[status][index],
+            ...updatedPatient,
+          };
+          break;
+        }
+      }
+      return newPatients;
+    });
+
+    showToast.success(t.editSuccess, t.editSuccessDesc(updatedPatient.name));
+    setIsEditModalOpen(false);
+    setSelectedEditPatient(null);
   };
 
   if (isLoading) {
@@ -614,6 +650,7 @@ const DashBoardPage = () => {
               status={patient.status}
               onMoveToCurrent={handleMoveToCurrent}
               onDelete={handleDeleteClick}
+              onEdit={handleEditClick}
               showActions={patient.status !== "current"}
             />
           ))
@@ -639,6 +676,16 @@ const DashBoardPage = () => {
         onAdd={handleAddPatient}
         words={words}
         language={language}
+      />
+
+      <EditAppointmentModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedEditPatient(null);
+        }}
+        onEdit={handleEditPatient}
+        patient={selectedEditPatient}
       />
 
       <DeleteConfirmModal
