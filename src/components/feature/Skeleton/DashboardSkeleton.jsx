@@ -25,18 +25,16 @@ const DashboardSkeleton = () => {
           direction={{ base: "column", md: "row" }}
           justify="space-between"
           align={{ base: "stretch", md: "center" }}
-          gap={4}>
-          <VStack align="flex-start" spacing={1}>
+          gap={{ base: 3, md: 6 }}
+          w="100%">
+          <VStack spacing={1} flex={1}>
             <Skeleton height="28px" width="180px" />
             <Skeleton height="16px" width="250px" />
           </VStack>
 
-          <Skeleton
-            height="32px"
-            width="130px"
-            borderRadius="md"
-            alignSelf={{ base: "stretch", md: "flex-end" }}
-          />
+          <Box alignSelf={{ base: "stretch", md: "center" }} display="flex">
+            <Skeleton height="32px" width="140px" borderRadius="md" />
+          </Box>
         </Flex>
 
         <Flex
@@ -72,40 +70,38 @@ const DashboardSkeleton = () => {
           <Box
             key={i}
             bg="bg-card"
-            p={3}
+            p={2}
             borderRadius="md"
             border="1px solid"
             borderColor="border-color"
             boxShadow="sm">
-            <Flex justify="space-between" align="start">
-              <HStack spacing={2.5} flex="1" minW={0}>
-                <Skeleton
-                  width="32px"
-                  height="32px"
-                  borderRadius="full"
-                  flexShrink={0}
-                />
+            <Box
+              pb={1.5}
+              mb={1.5}
+              borderBottom="1px solid"
+              borderColor="border-color">
+              <Flex justify="space-between" align="center" gap={2}>
                 <Box flex="1" minW={0}>
-                  <Skeleton height="16px" width="120px" mb={1.5} />
-                  <HStack spacing={1.5}>
-                    <Skeleton height="16px" width="50px" borderRadius="sm" />
-                    <Skeleton height="16px" width="50px" borderRadius="sm" />
-                    <Skeleton height="16px" width="50px" borderRadius="sm" />
-                  </HStack>
+                  <Skeleton height="18px" width="120px" borderRadius="sm" />
                 </Box>
-              </HStack>
-              <HStack spacing={0.5} flexShrink={0}>
-                <Skeleton width="24px" height="24px" borderRadius="md" />
-                <Skeleton width="24px" height="24px" borderRadius="md" />
-              </HStack>
-            </Flex>
 
-            <Skeleton height="1px" width="100%" my={1.5} />
+                <HStack spacing={1} flexShrink={0}>
+                  <Skeleton width="22px" height="22px" borderRadius="md" />
+                  <Skeleton width="22px" height="22px" borderRadius="md" />
+                </HStack>
+              </Flex>
 
-            <Wrap spacing={2} align="center">
-              <Skeleton height="14px" width="80px" borderRadius="sm" />
-              <Skeleton height="14px" width="80px" borderRadius="sm" />
-              <Skeleton height="14px" width="60px" borderRadius="sm" />
+              <HStack spacing={0.5} mt={0.5}>
+                <Skeleton height="16px" width="50px" borderRadius="sm" />
+                <Skeleton height="16px" width="50px" borderRadius="sm" />
+                <Skeleton height="16px" width="50px" borderRadius="sm" />
+              </HStack>
+            </Box>
+
+            <Wrap spacing={1.5} align="center">
+              <Skeleton height="16px" width="80px" borderRadius="sm" />
+              <Skeleton height="16px" width="60px" borderRadius="sm" />
+              <Skeleton height="16px" width="70px" borderRadius="sm" />
             </Wrap>
           </Box>
         ))}

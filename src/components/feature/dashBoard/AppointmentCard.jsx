@@ -1,18 +1,12 @@
-// src/components/feature/Appointment/AppointmentCard.jsx
 import React from "react";
 import {
   Box,
-  HStack,
   Text,
   Badge,
-  Avatar,
-  Divider,
   Icon,
   IconButton,
   Flex,
   Tooltip,
-  Wrap,
-  WrapItem,
   useColorModeValue,
   Link,
 } from "@chakra-ui/react";
@@ -23,6 +17,7 @@ import {
   FiHash,
   FiTrash2,
   FiEdit,
+  FiClock,
 } from "react-icons/fi";
 import useAppStore from "../../../store/store";
 
@@ -46,6 +41,8 @@ const AppointmentCard = ({
       appointmentId: "رقم الحجز",
       phoneLabel: "الهاتف",
       dateLabel: "التاريخ",
+      createdAtLabel: "تاريخ الإنشاء",
+      appointmentDateLabel: "موعد الحجز",
       status: {
         upcoming: "قادم",
         waiting: "في الانتظار",
@@ -59,12 +56,14 @@ const AppointmentCard = ({
       tooltips: {
         appointmentId: "رقم الحجز",
         phone: "رقم الهاتف - اضغط للتواصل عبر واتساب",
-        date: "تاريخ الموعد",
+        date: "موعد الحجز",
+        createdAt: "تاريخ إنشاء الحجز",
         bloodType: "فصيلة الدم",
         status: "الحالة",
         type: "نوع الحجز",
         delete: "حذف الحجز",
         edit: "تعديل الحجز",
+        appointmentDateTime: "تاريخ ووقت الموعد",
       },
     },
     en: {
@@ -75,6 +74,8 @@ const AppointmentCard = ({
       appointmentId: "Appointment ID",
       phoneLabel: "Phone",
       dateLabel: "Date",
+      createdAtLabel: "Created At",
+      appointmentDateLabel: "Appointment Date",
       status: {
         upcoming: "Upcoming",
         waiting: "Waiting",
@@ -89,11 +90,13 @@ const AppointmentCard = ({
         appointmentId: "Appointment ID",
         phone: "Phone Number - Click to contact via WhatsApp",
         date: "Appointment Date",
+        createdAt: "Appointment Created At",
         bloodType: "Blood Type",
         status: "Status",
         type: "Appointment Type",
         delete: "Delete Appointment",
         edit: "Edit Appointment",
+        appointmentDateTime: "Appointment Date & Time",
       },
     },
   };
@@ -143,13 +146,10 @@ const AppointmentCard = ({
   const deleteIconHoverBg = useColorModeValue("red.50", "red.900");
 
   const formatPhoneForWhatsApp = (phone) => {
-    // إزالة أي أحرف غير رقمية
     let cleaned = phone.replace(/[^0-9]/g, "");
-    // إذا كان الرقم يبدأ بـ 0، نستبدله بـ 966 (رمز السعودية)
     if (cleaned.startsWith("0")) {
       cleaned = "966" + cleaned.substring(1);
     }
-    // إذا كان الرقم لا يبدأ بـ 966، نضيفه
     if (!cleaned.startsWith("966")) {
       cleaned = "966" + cleaned;
     }
@@ -161,10 +161,116 @@ const AppointmentCard = ({
     return `https://wa.me/${formattedPhone}`;
   };
 
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return d.toLocaleDateString(language === "ar" ? "ar-EG" : "en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return d.toLocaleTimeString(language === "ar" ? "ar-EG" : "en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const createdAt = patient?.createdAt || patient?.createdDate || null;
+  const appointmentDate = patient?.appointmentDate || patient?.date || null;
+  const appointmentTime = patient?.appointmentTime || null;
+
+  const detailItems = [];
+
+  if (patient.phone) {
+    detailItems.push(
+      <Tooltip key="phone" label={t.tooltips.phone} placement="top" hasArrow>
+        <Link
+          href={getWhatsAppLink(patient.phone)}
+          target="_blank"
+          rel="noopener noreferrer"
+          _hover={{ textDecoration: "none" }}>
+          <Flex gap={0.5} align="center">
+            <Icon as={FiPhone} boxSize={2.5} color="whatsapp.500" />
+            <Text fontSize="10px" color="whatsapp.500" fontWeight="medium">
+              {patient.phone}
+            </Text>
+          </Flex>
+        </Link>
+      </Tooltip>,
+    );
+  }
+
+  if (patient.bloodType) {
+    detailItems.push(
+      <Tooltip
+        key="bloodType"
+        label={t.tooltips.bloodType}
+        placement="top"
+        hasArrow>
+        <Flex gap={0.5} align="center">
+          <Icon as={FiUser} boxSize={2.5} color="text-muted" />
+          <Badge
+            bg="gray.100"
+            color="gray.700"
+            fontSize="10px"
+            px={1}
+            py={0.5}
+            borderRadius="sm">
+            {patient.bloodType}
+          </Badge>
+        </Flex>
+      </Tooltip>,
+    );
+  }
+
+  if (createdAt) {
+    detailItems.push(
+      <Tooltip
+        key="createdAt"
+        label={t.tooltips.createdAt}
+        placement="top"
+        hasArrow>
+        <Flex gap={0.5} align="center">
+          <Icon as={FiClock} boxSize={2.5} color="text-muted" />
+          <Text fontSize="10px" color="text-muted" whiteSpace="nowrap">
+            {formatDate(createdAt)} {formatTime(createdAt)}
+          </Text>
+        </Flex>
+      </Tooltip>,
+    );
+  }
+
+  if (appointmentDate || appointmentTime) {
+    detailItems.push(
+      <Tooltip
+        key="appointment"
+        label={t.tooltips.appointmentDateTime}
+        placement="top"
+        hasArrow>
+        <Flex gap={0.5} align="center">
+          <Icon as={FiCalendar} boxSize={2.5} color="brand.500" />
+          <Text
+            fontSize="10px"
+            color="text-primary"
+            fontWeight="500"
+            whiteSpace="nowrap">
+            {appointmentDate && formatDate(appointmentDate)}
+            {appointmentTime && ` ${appointmentTime}`}
+          </Text>
+        </Flex>
+      </Tooltip>,
+    );
+  }
+
   return (
     <Box
       bg="bg-card"
-      p={3}
+      p={2}
       borderRadius="md"
       border="1px solid"
       borderColor={borderColor}
@@ -175,159 +281,112 @@ const AppointmentCard = ({
         boxShadow: "md",
         borderColor: "brand.300",
       }}
-      w="100%"
-      dir={isRTL ? "rtl" : "ltr"}>
-      <Flex justify="space-between" align="start">
-        <HStack spacing={2.5} flex="1" minW={0}>
-          <Tooltip label={patient.name} placement="top" hasArrow>
-            <Avatar
-              size="sm"
-              name={patient.name}
-              bg="brand.500"
-              color="white"
-            />
-          </Tooltip>
+      w="100%">
+      <Box pb={1.5} mb={1.5} borderBottom="1px solid" borderColor={borderColor}>
+        <Flex justify="space-between" align="center" gap={2}>
           <Box flex="1" minW={0}>
             <Tooltip label={patient.name} placement="top" hasArrow>
               <Text
                 fontWeight="semibold"
                 fontSize="sm"
                 color="text-primary"
-                noOfLines={1}>
+                noOfLines={1}
+                lineHeight="1.2">
                 {patient.name}
               </Text>
             </Tooltip>
-            <HStack spacing={1.5} flexWrap="wrap" mt={0.5}>
-              <Tooltip
-                label={t.tooltips.appointmentId}
-                placement="top"
-                hasArrow>
-                <Badge
-                  bg="gray.200"
-                  color="gray.700"
-                  fontSize="10px"
-                  px={1.5}
-                  py={0.5}
-                  borderRadius="sm">
-                  <HStack spacing={0.5}>
-                    <Icon as={FiHash} boxSize={2.5} />
-                    <Text fontSize="10px">{patient.id?.slice(0, 6)}</Text>
-                  </HStack>
-                </Badge>
-              </Tooltip>
-
-              <Tooltip label={t.tooltips.status} placement="top" hasArrow>
-                <Badge
-                  bg={getStatusBg(status)}
-                  color="white"
-                  fontSize="10px"
-                  px={2}
-                  py={0.5}
-                  borderRadius="sm">
-                  {getStatusLabel(status)}
-                </Badge>
-              </Tooltip>
-
-              {patient.appointmentType && (
-                <Tooltip label={t.tooltips.type} placement="top" hasArrow>
-                  <Badge
-                    bg={getAppointmentTypeBg(patient.appointmentType)}
-                    color="white"
-                    fontSize="10px"
-                    px={2}
-                    py={0.5}
-                    borderRadius="sm">
-                    {getAppointmentTypeLabel(patient.appointmentType)}
-                  </Badge>
-                </Tooltip>
-              )}
-            </HStack>
           </Box>
-        </HStack>
 
-        {showActions && (
-          <HStack spacing={0.5} flexShrink={0}>
-            <Tooltip label={t.tooltips.edit} placement="top" hasArrow>
-              <IconButton
-                aria-label={t.editAppointment}
-                icon={<FiEdit size={14} />}
-                size="xs"
-                variant="ghost"
-                color={editIconColor}
-                _hover={{ bg: editIconHoverBg }}
-                onClick={() => onEdit && onEdit(patient)}
-              />
+          {showActions && (
+            <Flex flexShrink={0} direction={isRTL ? "row" : "row"}>
+              <Tooltip label={t.tooltips.edit} placement="top" hasArrow>
+                <IconButton
+                  aria-label={t.editAppointment}
+                  icon={<FiEdit size={12} />}
+                  size="xs"
+                  variant="ghost"
+                  color={editIconColor}
+                  _hover={{ bg: editIconHoverBg }}
+                  onClick={() => onEdit && onEdit(patient)}
+                  minW="22px"
+                  h="22px"
+                />
+              </Tooltip>
+              <Tooltip label={t.tooltips.delete} placement="top" hasArrow>
+                <IconButton
+                  aria-label={t.deleteAppointment}
+                  icon={<FiTrash2 size={12} />}
+                  size="xs"
+                  variant="ghost"
+                  color={deleteIconColor}
+                  _hover={{ bg: deleteIconHoverBg }}
+                  onClick={() => onDelete(patient.id, status)}
+                  minW="22px"
+                  h="22px"
+                />
+              </Tooltip>
+            </Flex>
+          )}
+        </Flex>
+
+        <Flex
+          gap={0.5}
+          flexWrap="wrap"
+          mt={0.5}
+          direction={isRTL ? "row-reverse" : "row"}>
+          <Tooltip label={t.tooltips.appointmentId} placement="top" hasArrow>
+            <Badge
+              bg="gray.200"
+              color="gray.700"
+              fontSize="10px"
+              px={1}
+              py={0.5}
+              borderRadius="sm">
+              <Flex gap={0.5} align="center">
+                <Icon as={FiHash} boxSize={2} />
+                <Text fontSize="10px">{patient.id?.slice(0, 6)}</Text>
+              </Flex>
+            </Badge>
+          </Tooltip>
+
+          <Tooltip label={t.tooltips.status} placement="top" hasArrow>
+            <Badge
+              bg={getStatusBg(status)}
+              color="white"
+              fontSize="10px"
+              px={1.5}
+              py={0.5}
+              borderRadius="sm">
+              {getStatusLabel(status)}
+            </Badge>
+          </Tooltip>
+
+          {patient.appointmentType && (
+            <Tooltip label={t.tooltips.type} placement="top" hasArrow>
+              <Badge
+                bg={getAppointmentTypeBg(patient.appointmentType)}
+                color="white"
+                fontSize="10px"
+                px={1.5}
+                py={0.5}
+                borderRadius="sm">
+                {getAppointmentTypeLabel(patient.appointmentType)}
+              </Badge>
             </Tooltip>
-            <Tooltip label={t.tooltips.delete} placement="top" hasArrow>
-              <IconButton
-                aria-label={t.deleteAppointment}
-                icon={<FiTrash2 size={14} />}
-                size="xs"
-                variant="ghost"
-                color={deleteIconColor}
-                _hover={{ bg: deleteIconHoverBg }}
-                onClick={() => onDelete(patient.id, status)}
-              />
-            </Tooltip>
-          </HStack>
-        )}
+          )}
+        </Flex>
+      </Box>
+
+      <Flex
+        gap={1.5}
+        flexWrap="wrap"
+        align="center"
+        direction={isRTL ? "row-reverse" : "row"}
+        justifyContent={isRTL ? "flex-end" : "flex-start"}>
+        {detailItems.map((item, index) => (
+          <React.Fragment key={index}>{item}</React.Fragment>
+        ))}
       </Flex>
-
-      <Divider my={1.5} borderColor={borderColor} />
-
-      <Wrap spacing={2.5} align="center">
-        {patient.phone && (
-          <WrapItem>
-            <Tooltip label={t.tooltips.phone} placement="top" hasArrow>
-              <Link
-                href={getWhatsAppLink(patient.phone)}
-                target="_blank"
-                rel="noopener noreferrer"
-                _hover={{ textDecoration: "none" }}>
-                <HStack spacing={1} cursor="pointer">
-                  <Icon as={FiPhone} boxSize={3} color="whatsapp.500" />
-                  <Text
-                    fontSize="10px"
-                    color="whatsapp.500"
-                    fontWeight="medium">
-                    {patient.phone}
-                  </Text>
-                </HStack>
-              </Link>
-            </Tooltip>
-          </WrapItem>
-        )}
-        {patient.date && (
-          <WrapItem>
-            <Tooltip label={t.tooltips.date} placement="top" hasArrow>
-              <HStack spacing={1}>
-                <Icon as={FiCalendar} boxSize={3} color="text-muted" />
-                <Text fontSize="10px" color="text-muted">
-                  {patient.date}
-                </Text>
-              </HStack>
-            </Tooltip>
-          </WrapItem>
-        )}
-        {patient.bloodType && (
-          <WrapItem>
-            <Tooltip label={t.tooltips.bloodType} placement="top" hasArrow>
-              <HStack spacing={1}>
-                <Icon as={FiUser} boxSize={3} color="text-muted" />
-                <Badge
-                  bg="gray.100"
-                  color="gray.700"
-                  fontSize="10px"
-                  px={1.5}
-                  py={0.5}
-                  borderRadius="sm">
-                  {patient.bloodType}
-                </Badge>
-              </HStack>
-            </Tooltip>
-          </WrapItem>
-        )}
-      </Wrap>
     </Box>
   );
 };

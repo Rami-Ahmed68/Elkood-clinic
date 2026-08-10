@@ -1,4 +1,3 @@
-// src/pages/Dash/DashBoardPage.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -7,7 +6,6 @@ import {
   Button,
   Flex,
   SimpleGrid,
-  useToast,
   Badge,
   Select,
   IconButton,
@@ -19,15 +17,15 @@ import {
 } from "@chakra-ui/react";
 import { FiPlus, FiRefreshCw, FiSearch, FiX, FiFilter } from "react-icons/fi";
 import useAppStore from "../../store/store";
-import generateId from "../../utils/helpers";
+import helpers from "../../utils/helpers";
 import AppointmentCard from "../../components/feature/dashBoard/AppointmentCard";
 import DashboardSkeleton from "../../components/feature/Skeleton/DashboardSkeleton";
 import AddAppointmentModal from "../../components/feature/dashBoard/AddAppointmentModal";
 import DeleteConfirmModal from "../../components/feature/dashBoard/DeleteConfirmModal";
+import showToast from "../../components/common/toast";
 
 const DashBoardPage = () => {
   const { language } = useAppStore();
-  const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState("all");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState("all");
@@ -48,61 +46,103 @@ const DashBoardPage = () => {
   const [patients, setPatients] = useState({
     upcoming: [
       {
-        id: generateId(),
+        id: helpers.generateId(),
         name: "أحمد محمد",
         phone: "0555123456",
         bloodType: "O+",
         appointmentType: "مسبق",
-        date: "2026-08-10",
+        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+          .toISOString()
+          .split("T")[0],
+        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+          .toTimeString()
+          .slice(0, 5),
+        appointmentDate: "2026-08-10",
+        appointmentTime: "10:30",
         status: "upcoming",
       },
       {
-        id: generateId(),
+        id: helpers.generateId(),
         name: "سارة علي",
         phone: "0555789012",
         bloodType: "A-",
         appointmentType: "مباشر",
-        date: "2026-08-10",
+        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 12)
+          .toISOString()
+          .split("T")[0],
+        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 12)
+          .toTimeString()
+          .slice(0, 5),
+        appointmentDate: "2026-08-10",
+        appointmentTime: "14:00",
         status: "upcoming",
       },
       {
-        id: generateId(),
+        id: helpers.generateId(),
         name: "خالد عبدالله",
         phone: "0555345678",
         bloodType: "B+",
         appointmentType: "مسبق",
-        date: "2026-08-11",
+        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 5)
+          .toISOString()
+          .split("T")[0],
+        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 5)
+          .toTimeString()
+          .slice(0, 5),
+        appointmentDate: "2026-08-11",
+        appointmentTime: "09:00",
         status: "upcoming",
       },
     ],
     waiting: [
       {
-        id: generateId(),
+        id: helpers.generateId(),
         name: "نورة سعد",
         phone: "0555901234",
         bloodType: "AB+",
         appointmentType: "إسعافي",
-        date: "2026-08-09",
+        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 3)
+          .toISOString()
+          .split("T")[0],
+        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 3)
+          .toTimeString()
+          .slice(0, 5),
+        appointmentDate: "2026-08-09",
+        appointmentTime: "11:30",
         status: "waiting",
       },
       {
-        id: generateId(),
+        id: helpers.generateId(),
         name: "فاطمة حسن",
         phone: "0555456789",
         bloodType: "A+",
         appointmentType: "مباشر",
-        date: "2026-08-09",
+        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 24)
+          .toISOString()
+          .split("T")[0],
+        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 24)
+          .toTimeString()
+          .slice(0, 5),
+        appointmentDate: "2026-08-09",
+        appointmentTime: "15:45",
         status: "waiting",
       },
     ],
     current: [
       {
-        id: generateId(),
+        id: helpers.generateId(),
         name: "محمد إبراهيم",
         phone: "0555567890",
         bloodType: "A+",
         appointmentType: "مسبق",
-        date: "2026-08-09",
+        createdDate: new Date(Date.now() - 1000 * 60 * 30)
+          .toISOString()
+          .split("T")[0],
+        createdTime: new Date(Date.now() - 1000 * 60 * 30)
+          .toTimeString()
+          .slice(0, 5),
+        appointmentDate: "2026-08-09",
+        appointmentTime: "16:00",
         status: "current",
       },
     ],
@@ -133,6 +173,19 @@ const DashBoardPage = () => {
       refreshTooltip: "تحديث البيانات",
       addTooltip: "إضافة حجز جديد",
       searchTooltip: "البحث باسم المريض",
+      // رسائل Toast
+      filterApplied: "تم تطبيق الفلتر",
+      filterAppliedDesc: "تم تطبيق الفلتر والبحث بنجاح",
+      refreshSuccess: "تم التحديث",
+      refreshSuccessDesc: "تم تحديث البيانات بنجاح",
+      filterCleared: "تم مسح الفلتر",
+      filterClearedDesc: "تم مسح جميع الفلاتر",
+      moveSuccess: "تم النقل",
+      moveSuccessDesc: (name) => `تم نقل ${name} إلى قيد المعالجة`,
+      deleteSuccess: "تم الحذف",
+      deleteSuccessDesc: (name) => `تم حذف حجز ${name}`,
+      addSuccess: "تم الإضافة",
+      addSuccessDesc: (name) => `تم إضافة ${name}`,
     },
     en: {
       title: "Dashboard",
@@ -158,6 +211,19 @@ const DashBoardPage = () => {
       refreshTooltip: "Refresh data",
       addTooltip: "Add new appointment",
       searchTooltip: "Search by patient name",
+      // Toast Messages
+      filterApplied: "Filter Applied",
+      filterAppliedDesc: "Filter and search applied successfully",
+      refreshSuccess: "Refreshed",
+      refreshSuccessDesc: "Data refreshed successfully",
+      filterCleared: "Filter Cleared",
+      filterClearedDesc: "All filters cleared",
+      moveSuccess: "Moved",
+      moveSuccessDesc: (name) => `Moved ${name} to current`,
+      deleteSuccess: "Deleted",
+      deleteSuccessDesc: (name) => `Deleted appointment for ${name}`,
+      addSuccess: "Added",
+      addSuccessDesc: (name) => `Added ${name}`,
     },
   };
 
@@ -210,12 +276,7 @@ const DashBoardPage = () => {
     setSearchTerm(tempSearchTerm);
     setSelectedStatusFilter(tempStatusFilter);
     setSelectedTypeFilter(tempTypeFilter);
-    toast({
-      title: "تم تطبيق الفلتر",
-      status: "success",
-      duration: 1500,
-      isClosable: true,
-    });
+    showToast.success(t.filterApplied, t.filterAppliedDesc);
   };
 
   const getStatusCount = (status) => {
@@ -228,13 +289,7 @@ const DashBoardPage = () => {
   };
 
   const handleRefresh = () => {
-    toast({
-      title: "تم التحديث",
-      description: "تم تحديث البيانات بنجاح",
-      status: "success",
-      duration: 2000,
-      isClosable: true,
-    });
+    showToast.success(t.refreshSuccess, t.refreshSuccessDesc);
   };
 
   const handleClearFilter = () => {
@@ -244,12 +299,7 @@ const DashBoardPage = () => {
     setSelectedStatusFilter("all");
     setSelectedTypeFilter("all");
     setSearchTerm("");
-    toast({
-      title: "تم مسح الفلتر",
-      status: "info",
-      duration: 1500,
-      isClosable: true,
-    });
+    showToast.info(t.filterCleared, t.filterClearedDesc);
   };
 
   const handleMoveToCurrent = (patientId) => {
@@ -260,13 +310,7 @@ const DashBoardPage = () => {
         waiting: prev.waiting.filter((p) => p.id !== patientId),
         current: [...prev.current, { ...patient, status: "current" }],
       }));
-      toast({
-        title: "تم النقل",
-        description: `تم نقل ${patient.name} إلى قيد المعالجة`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast.success(t.moveSuccess, t.moveSuccessDesc(patient.name));
     }
   };
 
@@ -287,13 +331,10 @@ const DashBoardPage = () => {
           (p) => p.id !== selectedPatient.id,
         ),
       }));
-      toast({
-        title: "تم الحذف",
-        description: `تم حذف حجز ${selectedPatient.name}`,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast.error(
+        t.deleteSuccess,
+        t.deleteSuccessDesc(selectedPatient.name),
+      );
       setIsDeleteModalOpen(false);
       setSelectedPatient(null);
       setSelectedStatus("");
@@ -301,9 +342,13 @@ const DashBoardPage = () => {
   };
 
   const handleAddPatient = (newPatient) => {
+    const now = new Date();
     const patient = {
-      id: generateId(),
+      id: helpers.generateId(),
       ...newPatient,
+      createdAt: now.toISOString(),
+      createdDate: now.toISOString().split("T")[0],
+      createdTime: now.toTimeString().slice(0, 5),
       status: "upcoming",
     };
 
@@ -312,13 +357,7 @@ const DashBoardPage = () => {
       upcoming: [patient, ...prev.upcoming],
     }));
 
-    toast({
-      title: "تم الإضافة",
-      description: `تم إضافة ${patient.name}`,
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+    showToast.success(t.addSuccess, t.addSuccessDesc(patient.name));
   };
 
   if (isLoading) {
@@ -333,7 +372,7 @@ const DashBoardPage = () => {
     searchTerm.trim() !== "";
 
   return (
-    <Box w="100%" h="100%" dir={isRTL ? "rtl" : "ltr"}>
+    <Box w="100%" h="100%">
       <Box
         bg="bg-card"
         p={4}
@@ -346,28 +385,39 @@ const DashBoardPage = () => {
           direction={{ base: "column", md: "row" }}
           justify="space-between"
           align={{ base: "stretch", md: "center" }}
-          gap={4}>
-          <VStack align="flex-start" spacing={0}>
-            <Text fontSize="xl" fontWeight="bold" color="text-primary">
+          gap={{ base: 3, md: 6 }}
+          w="100%">
+          <VStack textAlign={"start"} spacing={0} flex={1}>
+            <Text fontSize="xl" fontWeight="bold" color="text-primary" w="100%">
               {t.title}
             </Text>
-            <Text fontSize="sm" color="text-muted">
+            <Text fontSize="sm" color="text-muted" w="100%">
               {t.subtitle}
             </Text>
           </VStack>
 
-          <Tooltip label={t.addTooltip} placement="bottom" hasArrow>
-            <Button
-              leftIcon={<FiPlus />}
-              bg="brand.500"
-              color="white"
-              _hover={{ bg: "brand.600" }}
-              size="sm"
-              onClick={() => setIsAddModalOpen(true)}
-              alignSelf={{ base: "stretch", md: "flex-end" }}>
-              {t.addAppointment}
-            </Button>
-          </Tooltip>
+          <Box
+            alignSelf={{ base: "stretch", md: "center" }}
+            display="flex"
+            justifyContent={isRTL ? "flex-start" : "flex-end"}>
+            <Tooltip
+              label={t.addTooltip}
+              placement={isRTL ? "bottom-start" : "bottom"}
+              hasArrow>
+              <Button
+                leftIcon={isRTL ? undefined : <FiPlus />}
+                rightIcon={isRTL ? <FiPlus /> : undefined}
+                bg="brand.500"
+                color="white"
+                _hover={{ bg: "brand.600" }}
+                size="sm"
+                onClick={() => setIsAddModalOpen(true)}
+                minW={{ base: "100%", md: "140px" }}
+                whiteSpace="nowrap">
+                {t.addAppointment}
+              </Button>
+            </Tooltip>
+          </Box>
         </Flex>
 
         <Flex
@@ -380,7 +430,10 @@ const DashBoardPage = () => {
           borderTop="1px solid"
           borderColor="border-color"
           flexWrap="wrap">
-          <HStack spacing={1.5} flexWrap="wrap">
+          <HStack
+            spacing={1.5}
+            flexWrap="wrap"
+            direction={isRTL ? "row-reverse" : "row"}>
             <Badge
               bg="blue.600"
               color="white"
@@ -433,8 +486,14 @@ const DashBoardPage = () => {
             </Badge>
           </HStack>
 
-          <HStack spacing={2} flexWrap="wrap">
-            <Tooltip label={t.searchTooltip} placement="bottom" hasArrow>
+          <HStack
+            spacing={2}
+            flexWrap="wrap"
+            direction={isRTL ? "row-reverse" : "row"}>
+            <Tooltip
+              label={t.searchTooltip}
+              placement={isRTL ? "bottom-start" : "bottom"}
+              hasArrow>
               <InputGroup size="xs" w={{ base: "120px", md: "160px" }}>
                 <InputLeftElement pointerEvents="none">
                   <FiSearch size={14} />
@@ -445,17 +504,22 @@ const DashBoardPage = () => {
                   onChange={(e) => setTempSearchTerm(e.target.value)}
                   borderRadius="md"
                   pl={7}
+                  textAlign={isRTL ? "right" : "left"}
                 />
               </InputGroup>
             </Tooltip>
 
-            <Tooltip label={t.filterByStatus} placement="bottom" hasArrow>
+            <Tooltip
+              label={t.filterByStatus}
+              placement={isRTL ? "bottom-start" : "bottom"}
+              hasArrow>
               <Select
                 size="xs"
                 w={{ base: "100px", md: "130px" }}
                 value={tempStatusFilter}
                 onChange={(e) => setTempStatusFilter(e.target.value)}
-                borderRadius="md">
+                borderRadius="md"
+                textAlign={isRTL ? "right" : "left"}>
                 {statusFilterOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -464,13 +528,17 @@ const DashBoardPage = () => {
               </Select>
             </Tooltip>
 
-            <Tooltip label={t.filterByType} placement="bottom" hasArrow>
+            <Tooltip
+              label={t.filterByType}
+              placement={isRTL ? "bottom-start" : "bottom"}
+              hasArrow>
               <Select
                 size="xs"
                 w={{ base: "100px", md: "130px" }}
                 value={tempTypeFilter}
                 onChange={(e) => setTempTypeFilter(e.target.value)}
-                borderRadius="md">
+                borderRadius="md"
+                textAlign={isRTL ? "right" : "left"}>
                 {typeFilterOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -479,10 +547,14 @@ const DashBoardPage = () => {
               </Select>
             </Tooltip>
 
-            <Tooltip label={t.applyTooltip} placement="bottom" hasArrow>
+            <Tooltip
+              label={t.applyTooltip}
+              placement={isRTL ? "bottom-start" : "bottom"}
+              hasArrow>
               <Button
                 size="xs"
-                leftIcon={<FiFilter />}
+                leftIcon={isRTL ? undefined : <FiFilter />}
+                rightIcon={isRTL ? <FiFilter /> : undefined}
                 bg="brand.500"
                 color="white"
                 _hover={{ bg: "brand.600" }}
@@ -492,7 +564,10 @@ const DashBoardPage = () => {
             </Tooltip>
 
             {isFilterActive && (
-              <Tooltip label={t.clearTooltip} placement="bottom" hasArrow>
+              <Tooltip
+                label={t.clearTooltip}
+                placement={isRTL ? "bottom-start" : "bottom"}
+                hasArrow>
                 <IconButton
                   aria-label={t.clearFilter}
                   icon={<FiX />}
@@ -509,7 +584,10 @@ const DashBoardPage = () => {
               </Tooltip>
             )}
 
-            <Tooltip label={t.refreshTooltip} placement="bottom" hasArrow>
+            <Tooltip
+              label={t.refreshTooltip}
+              placement={isRTL ? "bottom-start" : "bottom"}
+              hasArrow>
               <IconButton
                 aria-label={t.refresh}
                 icon={<FiRefreshCw />}
@@ -524,7 +602,10 @@ const DashBoardPage = () => {
         </Flex>
       </Box>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={2}>
+      <SimpleGrid
+        columns={{ base: 1, md: 2, lg: 3 }}
+        spacing={2}
+        direction={isRTL ? "rtl" : "ltr"}>
         {filteredPatients.length > 0 ? (
           filteredPatients.map((patient) => (
             <AppointmentCard

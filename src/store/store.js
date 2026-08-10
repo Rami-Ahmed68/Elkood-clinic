@@ -12,7 +12,7 @@ const useAppStore = create(
 
       toggleLanguage: () => {
         const current = get().language;
-        const newLang = current === "en" ? "ar " : "en";
+        const newLang = current === "en" ? "ar" : "en";
         set({ language: newLang });
         document.dir = newLang === "ar" ? "rtl" : "ltr";
         document.documentElement.lang = newLang;
