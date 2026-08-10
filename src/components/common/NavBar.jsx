@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Flex, IconButton, HStack, Text } from "@chakra-ui/react";
-import { FiMenu, FiMaximize2 } from "react-icons/fi";
+import { FiMenu } from "react-icons/fi";
 import ThemeToggle from "./ThemeToggle";
 import ToggleLanguageIcon from "./ToggleLanguageIcon";
 import useAppStore from "../../store/store";
@@ -60,24 +60,6 @@ const Navbar = () => {
           <ThemeToggle />
 
           <ToggleLanguageIcon />
-
-          <IconButton
-            aria-label="Fullscreen"
-            icon={<FiMaximize2 size={18} />}
-            variant="ghost"
-            size="sm"
-            color="text-secondary"
-            _hover={{ bg: "bg-hover" }}
-            onClick={() => {
-              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-              } else {
-                if (document.exitFullscreen) {
-                  document.exitFullscreen();
-                }
-              }
-            }}
-          />
         </HStack>
       </Flex>
     </Box>

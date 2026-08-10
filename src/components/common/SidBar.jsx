@@ -14,78 +14,47 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  FiHome,
-  FiCalendar,
-  FiUsers,
-  FiUserPlus,
-  FiUser,
-  FiClock,
-  FiInfo,
-} from "react-icons/fi";
+import { FiHome, FiCalendar, FiUsers, FiInfo } from "react-icons/fi";
 import useAppStore from "../../store/store";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { language, isSidebarOpen, closeSidebar } = useAppStore();
-
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const isRTL = language === "ar";
 
   const words = {
     ar: {
       appName: "عيادة ELKOOD",
-      dashboard: "لوحة التحكم",
-      appointments: "الحجوزات",
-      newAppointment: "حجز جديد",
-      about: "من نحن",
-      home: "الرئيسية",
-      patients: "المرضى",
-      history: "السجل",
-      profile: "الملف الشخصي",
-      settings: "الإعدادات",
-      logout: "تسجيل الخروج",
-      online: "متصل",
-      offline: "غير متصل",
-      version: "الإصدار 1.0.0",
-      switchLanguage: "English",
-      switchTheme: "الوضع المظلم",
       menu: "القائمة",
+      home: "الرئيسية",
+      dashboard: "لوحة التحكم",
+      create: "الحجوزات",
+      newAppointment: "إنشاء حجز",
+      about: "من نحن",
+      version: "الإصدار 1.0.0",
     },
     en: {
       appName: "ELKOOD Clinic",
+      menu: "Menu",
+      home: "Home",
       dashboard: "Dashboard",
-      appointments: "Appointments",
+      create: "Create Appointments",
       newAppointment: "New Appointment",
       about: "About Us",
-      home: "Home",
-      patients: "Patients",
-      history: "History",
-      profile: "Profile",
-      settings: "Settings",
-      logout: "Logout",
-      online: "Online",
-      offline: "Offline",
       version: "Version 1.0.0",
-      switchLanguage: "العربية",
-      switchTheme: "Dark Mode",
-      menu: "Menu",
     },
   };
+
+  const t = (key) => words[language]?.[key] || words.ar[key] || key;
 
   const menuItems = [
     { icon: FiHome, label: "home", path: "/" },
     { icon: FiCalendar, label: "dashboard", path: "/dashboard" },
-    { icon: FiUsers, label: "appointments", path: "/appointments" },
-    { icon: FiUserPlus, label: "newAppointment", path: "/add-appointment" },
-    { icon: FiUser, label: "patients", path: "/patients" },
-    { icon: FiClock, label: "history", path: "/history" },
+    { icon: FiUsers, label: "create", path: "/create" },
     { icon: FiInfo, label: "about", path: "/about" },
   ];
-
-  const t = (key) => {
-    return words[language]?.[key] || words.en[key] || key;
-  };
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
@@ -93,10 +62,6 @@ const Sidebar = () => {
   };
 
   const handleNavigation = (path) => {
-    if (path === "/logout") {
-      console.log("Logout clicked");
-      return;
-    }
     if (isMobile) closeSidebar();
     navigate(path);
   };
@@ -110,8 +75,8 @@ const Sidebar = () => {
       bg="bg-sidbar"
       transition="all 0.3s"
       display="flex"
-      flexDirection="column">
-      {/* Logo Section */}
+      flexDirection="column"
+      dir={isRTL ? "rtl" : "ltr"}>
       <Flex
         align="center"
         mb={6}
@@ -135,7 +100,8 @@ const Sidebar = () => {
           fontSize="lg"
           fontWeight="bold"
           color="brand.500"
-          ml={3}
+          ml={isRTL ? 0 : 3}
+          mr={isRTL ? 3 : 0}
           letterSpacing="tight">
           {t("appName")}
         </Text>
@@ -143,7 +109,6 @@ const Sidebar = () => {
 
       <Divider mb={4} borderColor="border-color" />
 
-      {/* Menu Label */}
       <Text
         fontSize="xs"
         fontWeight="semibold"
@@ -154,7 +119,6 @@ const Sidebar = () => {
         {t("menu")}
       </Text>
 
-      {/* Main Menu */}
       <VStack spacing={1} align="stretch" flex="1">
         {menuItems.map((item) => {
           const active = isActive(item.path);
@@ -179,7 +143,8 @@ const Sidebar = () => {
               position="relative">
               <Icon
                 as={item.icon}
-                mr={3}
+                mr={isRTL ? 0 : 3}
+                ml={isRTL ? 3 : 0}
                 w={4}
                 h={4}
                 color={active ? "brand.500" : "inherit"}
@@ -195,7 +160,8 @@ const Sidebar = () => {
               {active && (
                 <Box
                   position="absolute"
-                  right={0}
+                  right={isRTL ? "auto" : 0}
+                  left={isRTL ? 0 : "auto"}
                   w="3px"
                   h="20px"
                   bg="brand.500"
@@ -226,11 +192,11 @@ const Sidebar = () => {
     return (
       <Drawer
         isOpen={isSidebarOpen}
-        placement="right"
+        placement={isRTL ? "right" : "left"}
         onClose={closeSidebar}
         size="xs">
         <DrawerOverlay backdropFilter="blur(8px)" zIndex="overlay" />
-        <DrawerContent zIndex="modal" dir={language === "ar" ? "rtl" : "ltr"}>
+        <DrawerContent zIndex="modal">
           <DrawerBody p={0}>
             <SidebarContent />
           </DrawerBody>
@@ -243,17 +209,16 @@ const Sidebar = () => {
     <Box
       position="fixed"
       top="72px"
-      right={language === "ar" ? 0 : "auto"}
-      left={language === "en" ? 0 : "auto"}
-      w={isMobile ? "40%" : "22%"}
+      right={isRTL ? 0 : "auto"}
+      left={isRTL ? "auto" : 0}
+      w="22%"
       h="100%"
       bg="bg-body"
-      borderLeft={language === "ar" ? "1px" : "none"}
-      borderRight={language === "en" ? "1px" : "none"}
+      borderLeft={isRTL ? "1px" : "none"}
+      borderRight={isRTL ? "none" : "1px"}
       borderColor="border-color"
       zIndex={100}
-      overflowY="auto"
-      dir={language === "ar" ? "rtl" : "ltr"}>
+      overflowY="auto">
       <SidebarContent />
     </Box>
   );

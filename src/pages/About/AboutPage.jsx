@@ -1,4 +1,3 @@
-// src/pages/About/AboutPage.jsx
 import React from "react";
 import {
   Box,
@@ -109,20 +108,37 @@ const AboutPage = () => {
     },
   };
 
-  const t = words[language] || words.ar;
-  const isRTL = language === "ar";
+  const text = (key) => {
+    return words[language]?.[key] || words.ar[key] || key;
+  };
 
   const values = [
-    { icon: FiAward, label: t.values.quality, text: t.values.qualityText },
-    { icon: FiHeart, label: t.values.care, text: t.values.careText },
-    { icon: FiUsers, label: t.values.trust, text: t.values.trustText },
-    { icon: FiStar, label: t.values.innovation, text: t.values.innovationText },
+    {
+      icon: FiAward,
+      label: text("values.quality"),
+      text: text("values.qualityText"),
+    },
+    {
+      icon: FiHeart,
+      label: text("values.care"),
+      text: text("values.careText"),
+    },
+    {
+      icon: FiUsers,
+      label: text("values.trust"),
+      text: text("values.trustText"),
+    },
+    {
+      icon: FiStar,
+      label: text("values.innovation"),
+      text: text("values.innovationText"),
+    },
   ];
 
   const teamStats = [
-    { value: "15+", label: t.team.doctors, icon: FiUser },
-    { value: "30+", label: t.team.nurses, icon: FiHeart },
-    { value: "10+", label: t.team.staff, icon: FiBriefcase },
+    { value: "15+", label: text("team.doctors"), icon: FiUser },
+    { value: "30+", label: text("team.nurses"), icon: FiHeart },
+    { value: "10+", label: text("team.staff"), icon: FiBriefcase },
   ];
 
   if (isLoading) {
@@ -140,41 +156,43 @@ const AboutPage = () => {
         border="1px solid"
         borderColor="border-color">
         <Flex
-          direction={{ base: "column", md: isRTL ? "row-reverse" : "row" }}
+          direction={{ base: "column", md: "row" }}
           align="center"
           p={{ base: 4, sm: 6, md: 10, lg: 12 }}
           gap={{ base: 4, md: 8 }}>
           <VStack
             flex="1"
-            align={{ base: "center", md: isRTL ? "flex-end" : "flex-start" }}
+            align={{ base: "center", md: "start" }}
             spacing={{ base: 3, md: 4 }}>
             <Text
+              textAlign={{ base: "center", md: "left" }}
               fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
               fontWeight="bold"
               color="brand.500"
               lineHeight="1.2">
-              {t.title}
+              {text("title")}
             </Text>
             <Text
+              textAlign={{ base: "center", md: "left" }}
               fontSize={{ base: "xl", sm: "2xl", md: "3xl", lg: "4xl" }}
               fontWeight="bold"
               color="text-primary"
               lineHeight="1.2">
-              {t.subtitle}
+              {text("subtitle")}
             </Text>
             <Text
+              textAlign={{ base: "center", md: "left" }}
               fontSize={{ base: "sm", md: "md" }}
               color="text-muted"
-              lineHeight="1.8"
-              w="100%">
-              {t.description1}
+              lineHeight="1.8">
+              {text("description1")}
             </Text>
             <Text
+              textAlign={{ base: "center", md: "left" }}
               fontSize={{ base: "sm", md: "md" }}
               color="text-muted"
-              lineHeight="1.8"
-              w="100%">
-              {t.description2}
+              lineHeight="1.8">
+              {text("description2")}
             </Text>
           </VStack>
         </Flex>
@@ -195,10 +213,10 @@ const AboutPage = () => {
             fontWeight="bold"
             color="brand.500"
             mb={3}>
-            {t.ourMission}
+            {text("ourMission")}
           </Text>
           <Text color="text-muted" lineHeight="1.8">
-            {t.missionText}
+            {text("missionText")}
           </Text>
         </Box>
 
@@ -213,10 +231,10 @@ const AboutPage = () => {
             fontWeight="bold"
             color="brand.500"
             mb={3}>
-            {t.ourVision}
+            {text("ourVision")}
           </Text>
           <Text color="text-muted" lineHeight="1.8">
-            {t.visionText}
+            {text("visionText")}
           </Text>
         </Box>
       </SimpleGrid>
@@ -232,8 +250,9 @@ const AboutPage = () => {
           fontSize={{ base: "lg", md: "xl" }}
           fontWeight="bold"
           color="text-primary"
-          mb={6}>
-          {t.ourValues}
+          mb={6}
+          textAlign="start">
+          {text("ourValues")}
         </Text>
         <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={{ base: 4, md: 6 }}>
           {values.map((item, index) => (
@@ -313,13 +332,13 @@ const AboutPage = () => {
           color="text-primary"
           textAlign="center"
           mb={4}>
-          {t.contact}
+          {text("contact")}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
           <Box textAlign="center">
             <Icon as={FiMapPin} boxSize={5} color="brand.500" mb={2} />
             <Text fontWeight="semibold" color="text-primary">
-              {t.address}
+              {text("address")}
             </Text>
             <Text color="text-muted" fontSize="sm">
               {language === "ar"
@@ -330,7 +349,7 @@ const AboutPage = () => {
           <Box textAlign="center">
             <Icon as={FiPhone} boxSize={5} color="brand.500" mb={2} />
             <Text fontWeight="semibold" color="text-primary">
-              {t.phone}
+              {text("phone")}
             </Text>
             <Text color="text-muted" fontSize="sm">
               +966 12 345 6789
@@ -339,7 +358,7 @@ const AboutPage = () => {
           <Box textAlign="center">
             <Icon as={FiMail} boxSize={5} color="brand.500" mb={2} />
             <Text fontWeight="semibold" color="text-primary">
-              {t.email}
+              {text("email")}
             </Text>
             <Text color="text-muted" fontSize="sm">
               info@elkood.com

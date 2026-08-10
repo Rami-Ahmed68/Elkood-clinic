@@ -363,8 +363,12 @@ export const theme = extendTheme({
         _dark: "#0d0d0d",
       },
       "bg-card": {
-        default: "#ffffff",
-        _dark: "#1a1a1a",
+        default: "#ffffffcc",
+        _dark: "rgba(17, 17, 17, 0.79)",
+      },
+      "bg-input": {
+        default: "#fffefe",
+        _dark: "#000000",
       },
       "bg-hover": {
         default: "#e5e5e5",

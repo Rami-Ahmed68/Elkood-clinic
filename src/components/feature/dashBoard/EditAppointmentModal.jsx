@@ -1,4 +1,3 @@
-// src/components/feature/dashBoard/EditAppointmentModal.jsx
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -31,10 +30,11 @@ import {
   FiInfo,
 } from "react-icons/fi";
 import { showToast } from "../../common/toast";
-import useStore from "../../../store/store";
+import useAppStore from "../../../store/store";
+import helpers from "../../../utils/helpers";
 
 const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
-  const { language } = useStore();
+  const { language } = useAppStore();
   const [editedPatient, setEditedPatient] = useState({
     name: "",
     phone: "",
@@ -42,6 +42,7 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
     appointmentType: "scheduled",
     appointmentDate: "",
     appointmentTime: "",
+    status: "upcoming",
   });
   const [originalPatient, setOriginalPatient] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,6 +56,7 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
         appointmentType: patient.appointmentType || "scheduled",
         appointmentDate: patient.appointmentDate || patient.date || "",
         appointmentTime: patient.appointmentTime || "",
+        status: patient.status || "upcoming",
       };
       setEditedPatient(data);
       setOriginalPatient(data);
@@ -74,12 +76,18 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
       appointmentType: "Appointment Type",
       appointmentDate: "Appointment Date",
       appointmentTime: "Appointment Time",
+      status: "Status",
       editAppointment: "Edit Appointment",
       selectBloodType: "Select Blood Type",
       appointmentTypes: {
         scheduled: "Scheduled",
         direct: "Direct",
         emergency: "Emergency",
+      },
+      statusOptions: {
+        upcoming: "Upcoming",
+        waiting: "Waiting",
+        current: "In Progress",
       },
       bloodTypes: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
       required: "Required fields",
@@ -100,12 +108,18 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
       appointmentType: "نوع الحجز",
       appointmentDate: "تاريخ الموعد",
       appointmentTime: "وقت الموعد",
+      status: "الحالة",
       editAppointment: "تعديل الحجز",
       selectBloodType: "اختر فصيلة الدم",
       appointmentTypes: {
         scheduled: "حجز مسبق",
         direct: "حجز مباشر",
         emergency: "حالة إسعافية",
+      },
+      statusOptions: {
+        upcoming: "قادم",
+        waiting: "في الانتظار",
+        current: "قيد المعالجة",
       },
       bloodTypes: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
       required: "حقول مطلوبة",
@@ -123,6 +137,7 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
   const bloodTypes = text("bloodTypes") || words.ar.bloodTypes;
   const appointmentTypes =
     text("appointmentTypes") || words.ar.appointmentTypes;
+  const statusOptions = text("statusOptions") || words.ar.statusOptions;
 
   const hasChanges = () => {
     if (!originalPatient) return false;
@@ -133,7 +148,8 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
       editedPatient.bloodType !== originalPatient.bloodType ||
       editedPatient.appointmentType !== originalPatient.appointmentType ||
       editedPatient.appointmentDate !== originalPatient.appointmentDate ||
-      editedPatient.appointmentTime !== originalPatient.appointmentTime
+      editedPatient.appointmentTime !== originalPatient.appointmentTime ||
+      editedPatient.status !== originalPatient.status
     );
   };
 
@@ -148,20 +164,34 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
 
   const handleSubmit = async () => {
     if (!hasChanges()) {
-      showToast.warning(text("warning") || "Warning", text("noChanges"));
+      showToast.warning("Warning", text("noChanges"));
       return;
     }
 
     if (!isFormValid()) {
-      showToast.warning(text("warning") || "Warning", text("fillAllFields"));
+      showToast.warning("Warning", text("fillAllFields"));
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await onEdit(editedPatient);
-      showToast.success(text("success"));
-      onClose();
+      const updatedData = {
+        name: editedPatient.name,
+        phone: editedPatient.phone,
+        bloodType: editedPatient.bloodType,
+        appointmentType: editedPatient.appointmentType,
+        appointmentDate: editedPatient.appointmentDate,
+        appointmentTime: editedPatient.appointmentTime,
+        status: editedPatient.status,
+      };
+
+      const updated = helpers.updateAppointment(patient.id, updatedData);
+
+      if (updated) {
+        onEdit(updated);
+        showToast.success(text("success"));
+        onClose();
+      }
     } catch (error) {
       showToast.error(text("error"));
     } finally {
@@ -179,6 +209,11 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
   const getAppointmentTypeLabel = (key) => {
     const types = text("appointmentTypes");
     return types?.[key] || key;
+  };
+
+  const getStatusLabel = (key) => {
+    const statuses = text("statusOptions");
+    return statuses?.[key] || key;
   };
 
   const isSaveDisabled = !hasChanges() || !isFormValid() || isSubmitting;
@@ -207,36 +242,40 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
         <IconButton
           aria-label={text("close")}
           icon={<FiX />}
-          size="sm"
+          size="xs"
           variant="ghost"
           position="absolute"
-          top={3}
-          sx={language === "en" ? { right: 3 } : { left: 3 }}
+          top={2}
+          sx={language === "en" ? { right: 2 } : { left: 2 }}
           onClick={handleClose}
           color="text-muted"
           _hover={{ bg: "bg-hover" }}
           zIndex={1}
+          w="24px"
+          h="24px"
+          minW="24px"
         />
 
         <ModalHeader
           borderBottom="1px solid"
           borderColor="border-color"
-          pb={4}
-          flexShrink={0}>
-          <Flex gap={3} align="center">
+          pb={3}
+          flexShrink={0}
+          pr={8}>
+          <Flex gap={2.5} align="center">
             <Box
-              p={2}
+              p={1.5}
               bg="brand.50"
               _dark={{ bg: "brand.900" }}
               borderRadius="full"
               flexShrink={0}>
-              <Icon as={FiEdit} color="brand.500" w={6} h={6} />
+              <Icon as={FiEdit} color="brand.500" w={5} h={5} />
             </Box>
             <Box>
-              <Text fontSize="lg" fontWeight="bold" color="text-primary">
+              <Text fontSize="md" fontWeight="bold" color="text-primary">
                 {text("title")}
               </Text>
-              <Text fontSize="sm" color="text-muted">
+              <Text fontSize="xs" color="text-muted">
                 {text("subtitle")}
               </Text>
             </Box>
@@ -244,7 +283,7 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
         </ModalHeader>
 
         <ModalBody
-          py={6}
+          py={4}
           overflowY="auto"
           flex="1"
           sx={{
@@ -259,16 +298,16 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
               borderRadius: "full",
             },
           }}>
-          <VStack spacing={4} align="stretch">
+          <VStack spacing={3} align="stretch">
             <FormControl>
-              <FormLabel fontSize="sm" color="text-muted">
+              <FormLabel fontSize="xs" color="text-muted">
                 <Flex gap={1} align="center">
-                  <Icon as={FiUser} boxSize={3} />
+                  <Icon as={FiUser} boxSize={2.5} color="brand.500" />
                   <Text>{text("patientName")}</Text>
                   <Text
                     as="span"
                     color="red.500"
-                    fontSize="md"
+                    fontSize="sm"
                     fontWeight="bold">
                     *
                   </Text>
@@ -283,23 +322,26 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
                 bg="bg-input"
                 border="1px solid"
                 borderColor="border-color"
-                size="md"
+                size="sm"
+                h="32px"
+                fontSize="xs"
                 _focus={{
                   borderColor: "brand.500",
                   boxShadow: "0 0 0 1px brand.500",
                 }}
+                borderRadius="md"
               />
             </FormControl>
 
             <FormControl>
-              <FormLabel fontSize="sm" color="text-muted">
+              <FormLabel fontSize="xs" color="text-muted">
                 <Flex gap={1} align="center">
-                  <Icon as={FiPhone} boxSize={3} />
+                  <Icon as={FiPhone} boxSize={2.5} color="brand.500" />
                   <Text>{text("phone")}</Text>
                   <Text
                     as="span"
                     color="red.500"
-                    fontSize="md"
+                    fontSize="sm"
                     fontWeight="bold">
                     *
                   </Text>
@@ -314,18 +356,21 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
                 bg="bg-input"
                 border="1px solid"
                 borderColor="border-color"
-                size="md"
+                size="sm"
+                h="32px"
+                fontSize="xs"
                 _focus={{
                   borderColor: "brand.500",
                   boxShadow: "0 0 0 1px brand.500",
                 }}
+                borderRadius="md"
               />
             </FormControl>
 
             <FormControl>
-              <FormLabel fontSize="sm" color="text-muted">
+              <FormLabel fontSize="xs" color="text-muted">
                 <Flex gap={1} align="center">
-                  <Icon as={FiDroplet} boxSize={3} />
+                  <Icon as={FiDroplet} boxSize={2.5} color="brand.500" />
                   <Text>{text("bloodType")}</Text>
                 </Flex>
               </FormLabel>
@@ -341,11 +386,14 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
                 bg="bg-input"
                 border="1px solid"
                 borderColor="border-color"
-                size="md"
+                size="sm"
+                h="32px"
+                fontSize="xs"
                 _focus={{
                   borderColor: "brand.500",
                   boxShadow: "0 0 0 1px brand.500",
-                }}>
+                }}
+                borderRadius="md">
                 {Array.isArray(bloodTypes) &&
                   bloodTypes.map((type) => (
                     <option key={type} value={type}>
@@ -356,9 +404,9 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
             </FormControl>
 
             <FormControl>
-              <FormLabel fontSize="sm" color="text-muted">
+              <FormLabel fontSize="xs" color="text-muted">
                 <Flex gap={1} align="center">
-                  <Icon as={FiClock} boxSize={3} />
+                  <Icon as={FiClock} boxSize={2.5} color="purple.500" />
                   <Text>{text("appointmentType")}</Text>
                 </Flex>
               </FormLabel>
@@ -373,11 +421,14 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
                 bg="bg-input"
                 border="1px solid"
                 borderColor="border-color"
-                size="md"
+                size="sm"
+                h="32px"
+                fontSize="xs"
                 _focus={{
                   borderColor: "brand.500",
                   boxShadow: "0 0 0 1px brand.500",
-                }}>
+                }}
+                borderRadius="md">
                 {Object.keys(appointmentTypes).map((key) => (
                   <option key={key} value={key}>
                     {getAppointmentTypeLabel(key)}
@@ -387,14 +438,14 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
             </FormControl>
 
             <FormControl>
-              <FormLabel fontSize="sm" color="text-muted">
+              <FormLabel fontSize="xs" color="text-muted">
                 <Flex gap={1} align="center">
-                  <Icon as={FiCalendar} boxSize={3} />
+                  <Icon as={FiCalendar} boxSize={2.5} color="purple.500" />
                   <Text>{text("appointmentDate")}</Text>
                   <Text
                     as="span"
                     color="red.500"
-                    fontSize="md"
+                    fontSize="sm"
                     fontWeight="bold">
                     *
                   </Text>
@@ -412,23 +463,26 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
                 bg="bg-input"
                 border="1px solid"
                 borderColor="border-color"
-                size="md"
+                size="sm"
+                h="32px"
+                fontSize="xs"
                 _focus={{
                   borderColor: "brand.500",
                   boxShadow: "0 0 0 1px brand.500",
                 }}
+                borderRadius="md"
               />
             </FormControl>
 
             <FormControl>
-              <FormLabel fontSize="sm" color="text-muted">
+              <FormLabel fontSize="xs" color="text-muted">
                 <Flex gap={1} align="center">
-                  <Icon as={FiClock} boxSize={3} />
+                  <Icon as={FiClock} boxSize={2.5} color="purple.500" />
                   <Text>{text("appointmentTime")}</Text>
                   <Text
                     as="span"
                     color="red.500"
-                    fontSize="md"
+                    fontSize="sm"
                     fontWeight="bold">
                     *
                   </Text>
@@ -446,28 +500,66 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
                 bg="bg-input"
                 border="1px solid"
                 borderColor="border-color"
-                size="md"
+                size="sm"
+                h="32px"
+                fontSize="xs"
                 _focus={{
                   borderColor: "brand.500",
                   boxShadow: "0 0 0 1px brand.500",
                 }}
+                borderRadius="md"
               />
+            </FormControl>
+
+            {/* ✅ حقل حالة الحجز */}
+            <FormControl>
+              <FormLabel fontSize="xs" color="text-muted">
+                <Flex gap={1} align="center">
+                  <Icon as={FiEdit} boxSize={2.5} color="purple.500" />
+                  <Text>{text("status")}</Text>
+                </Flex>
+              </FormLabel>
+              <Select
+                value={editedPatient.status}
+                onChange={(e) =>
+                  setEditedPatient({
+                    ...editedPatient,
+                    status: e.target.value,
+                  })
+                }
+                bg="bg-input"
+                border="1px solid"
+                borderColor="border-color"
+                size="sm"
+                h="32px"
+                fontSize="xs"
+                _focus={{
+                  borderColor: "brand.500",
+                  boxShadow: "0 0 0 1px brand.500",
+                }}
+                borderRadius="md">
+                {Object.keys(statusOptions).map((key) => (
+                  <option key={key} value={key}>
+                    {getStatusLabel(key)}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
 
             <Divider borderColor="border-color" />
 
             <Box
-              p={3}
+              p={2.5}
               borderRadius="lg"
-              bg="error.50"
-              _dark={{ bg: "error.900" }}
+              bg="blue.50"
+              _dark={{ bg: "blue.900" }}
               border="1px solid"
-              borderColor="error.200">
+              borderColor="blue.200">
               <Text
-                fontSize="sm"
-                color="error.600"
-                _dark={{ color: "error.300" }}>
-                <Icon as={FiInfo} />
+                fontSize="xs"
+                color="blue.600"
+                _dark={{ color: "blue.300" }}>
+                <Icon as={FiInfo} mr={2} />
                 {text("fillAllFields")}
               </Text>
             </Box>
@@ -477,32 +569,39 @@ const EditAppointmentModal = ({ isOpen, onClose, onEdit, patient }) => {
         <ModalFooter
           borderTop="1px solid"
           borderColor="border-color"
-          pt={4}
+          pt={3}
+          pb={3}
           flexShrink={0}>
-          <Flex gap={3}>
+          <Flex gap={2.5}>
             <Button
               variant="outline"
               onClick={handleClose}
               isDisabled={isSubmitting}
-              size="md">
+              size="xs"
+              h="28px"
+              fontSize="xs"
+              borderRadius="md">
               {text("cancel")}
             </Button>
             <Button
               sx={{
-                bg: "#22c55e !important",
+                bg: isSaveDisabled
+                  ? "#94a3b8 !important"
+                  : "#22c55e !important",
                 color: "white !important",
-                _hover: {
-                  bg: "#16a34a !important",
-                },
-                _active: {
-                  bg: "#15803d !important",
-                },
+                _hover: isSaveDisabled ? {} : { bg: "#16a34a !important" },
+                cursor: isSaveDisabled ? "not-allowed" : "pointer",
+                opacity: isSaveDisabled ? 0.6 : 1,
               }}
               onClick={handleSubmit}
               isLoading={isSubmitting}
               loadingText={text("save")}
               isDisabled={isSaveDisabled}
-              size="md">
+              size="xs"
+              h="28px"
+              fontSize="xs"
+              borderRadius="md"
+              px={4}>
               {text("save")}
             </Button>
           </Flex>

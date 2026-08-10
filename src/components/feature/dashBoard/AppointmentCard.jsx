@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Box,
   Text,
@@ -28,79 +28,109 @@ const AppointmentCard = ({
   onDelete,
   onEdit,
   showActions = true,
+  isAdmin = false,
 }) => {
   const { language } = useAppStore();
 
-  const words = {
-    ar: {
-      moveToCurrent: "نقل للمعالجة",
-      deleteAppointment: "حذف الحجز",
-      editAppointment: "تعديل الحجز",
-      bloodType: "فصيلة الدم",
-      appointmentId: "رقم الحجز",
-      phoneLabel: "الهاتف",
-      dateLabel: "التاريخ",
-      createdAtLabel: "تاريخ الإنشاء",
-      appointmentDateLabel: "موعد الحجز",
-      status: {
-        upcoming: "قادم",
-        waiting: "في الانتظار",
-        current: "قيد المعالجة",
-      },
-      appointmentTypes: {
-        مسبق: "حجز مسبق",
-        مباشر: "حجز مباشر",
-        إسعافي: "حالة إسعافية",
-      },
-      tooltips: {
-        appointmentId: "رقم الحجز",
-        phone: "رقم الهاتف - اضغط للتواصل عبر واتساب",
-        date: "موعد الحجز",
-        createdAt: "تاريخ إنشاء الحجز",
-        bloodType: "فصيلة الدم",
-        status: "الحالة",
-        type: "نوع الحجز",
-        delete: "حذف الحجز",
-        edit: "تعديل الحجز",
-        appointmentDateTime: "تاريخ ووقت الموعد",
-      },
-    },
-    en: {
-      moveToCurrent: "Move to Current",
-      deleteAppointment: "Delete Appointment",
-      editAppointment: "Edit Appointment",
-      bloodType: "Blood Type",
-      appointmentId: "Appointment ID",
-      phoneLabel: "Phone",
-      dateLabel: "Date",
-      createdAtLabel: "Created At",
-      appointmentDateLabel: "Appointment Date",
-      status: {
-        upcoming: "Upcoming",
-        waiting: "Waiting",
-        current: "In Progress",
-      },
-      appointmentTypes: {
-        مسبق: "Scheduled",
-        مباشر: "Direct",
-        إسعافي: "Emergency",
-      },
-      tooltips: {
-        appointmentId: "Appointment ID",
-        phone: "Phone Number - Click to contact via WhatsApp",
-        date: "Appointment Date",
-        createdAt: "Appointment Created At",
-        bloodType: "Blood Type",
-        status: "Status",
-        type: "Appointment Type",
-        delete: "Delete Appointment",
-        edit: "Edit Appointment",
-        appointmentDateTime: "Appointment Date & Time",
-      },
-    },
-  };
+  const text = useCallback(
+    (key) => {
+      const words = {
+        ar: {
+          moveToCurrent: "نقل للمعالجة",
+          deleteAppointment: "حذف الحجز",
+          editAppointment: "تعديل الحجز",
+          bloodType: "فصيلة الدم",
+          appointmentId: "رقم الحجز",
+          phoneLabel: "الهاتف",
+          dateLabel: "التاريخ",
+          createdAtLabel: "تاريخ الإنشاء",
+          appointmentDateLabel: "موعد الحجز",
+          createdByLabel: "تم الإنشاء بواسطة",
+          adminLabel: "أدمن",
+          userLabel: "مريض",
+          status: {
+            upcoming: "قادم",
+            waiting: "في الانتظار",
+            current: "قيد المعالجة",
+          },
+          appointmentTypes: {
+            scheduled: "حجز مسبق",
+            direct: "حجز مباشر",
+            emergency: "حالة إسعافية",
+          },
+          tooltips: {
+            appointmentId: "رقم الحجز",
+            phone: "رقم الهاتف - اضغط للتواصل عبر واتساب",
+            date: "موعد الحجز",
+            createdAt: "تاريخ إنشاء الحجز",
+            createdBy: "تم الإنشاء بواسطة",
+            bloodType: "فصيلة الدم",
+            status: "الحالة",
+            type: "نوع الحجز",
+            delete: "حذف الحجز",
+            edit: "تعديل الحجز",
+            appointmentDateTime: "تاريخ ووقت الموعد",
+            admin: "أدمن",
+            user: "مريض",
+          },
+        },
+        en: {
+          moveToCurrent: "Move to Current",
+          deleteAppointment: "Delete Appointment",
+          editAppointment: "Edit Appointment",
+          bloodType: "Blood Type",
+          appointmentId: "Appointment ID",
+          phoneLabel: "Phone",
+          dateLabel: "Date",
+          createdAtLabel: "Created At",
+          appointmentDateLabel: "Appointment Date",
+          createdByLabel: "Created By",
+          adminLabel: "Admin",
+          userLabel: "User",
+          status: {
+            upcoming: "Upcoming",
+            waiting: "Waiting",
+            current: "In Progress",
+          },
+          appointmentTypes: {
+            scheduled: "Scheduled",
+            direct: "Direct",
+            emergency: "Emergency",
+          },
+          tooltips: {
+            appointmentId: "Appointment ID",
+            phone: "Phone Number - Click to contact via WhatsApp",
+            date: "Appointment Date",
+            createdAt: "Appointment Created At",
+            createdBy: "Created By",
+            bloodType: "Blood Type",
+            status: "Status",
+            type: "Appointment Type",
+            delete: "Delete Appointment",
+            edit: "Edit Appointment",
+            appointmentDateTime: "Appointment Date & Time",
+            admin: "Admin",
+            user: "User",
+          },
+        },
+      };
 
-  const t = words[language] || words.ar;
+      if (typeof key === "string" && key.includes(".")) {
+        const keys = key.split(".");
+        let value = words[language] || words.ar;
+        for (const k of keys) {
+          if (value && typeof value === "object") {
+            value = value[k];
+          } else {
+            return key;
+          }
+        }
+        return value || key;
+      }
+      return words[language]?.[key] || words.ar[key] || key;
+    },
+    [language],
+  );
 
   const getStatusBg = (status) => {
     switch (status) {
@@ -116,16 +146,16 @@ const AppointmentCard = ({
   };
 
   const getStatusLabel = (status) => {
-    return t.status[status] || status;
+    return text(`status.${status}`) || status;
   };
 
   const getAppointmentTypeBg = (type) => {
     switch (type) {
-      case "مسبق":
+      case "scheduled":
         return "green.500";
-      case "مباشر":
+      case "direct":
         return "blue.500";
-      case "إسعافي":
+      case "emergency":
         return "red.500";
       default:
         return "gray.500";
@@ -133,7 +163,7 @@ const AppointmentCard = ({
   };
 
   const getAppointmentTypeLabel = (type) => {
-    return t.appointmentTypes[type] || type;
+    return text(`appointmentTypes.${type}`) || type;
   };
 
   const borderColor = useColorModeValue("border-color", "border-color");
@@ -179,7 +209,13 @@ const AppointmentCard = ({
     });
   };
 
-  const createdAt = patient?.createdAt || patient?.createdDate || null;
+  const createdAt =
+    patient?.createdAt ||
+    patient?.createdDate ||
+    patient?.created_at ||
+    patient?.created_date ||
+    null;
+  const createdBy = patient?.created_by || null;
   const appointmentDate = patient?.appointmentDate || patient?.date || null;
   const appointmentTime = patient?.appointmentTime || null;
 
@@ -187,7 +223,11 @@ const AppointmentCard = ({
 
   if (patient.phone) {
     detailItems.push(
-      <Tooltip key="phone" label={t.tooltips.phone} placement="top" hasArrow>
+      <Tooltip
+        key="phone"
+        label={text("tooltips.phone")}
+        placement="top"
+        hasArrow>
         <Link
           href={getWhatsAppLink(patient.phone)}
           target="_blank"
@@ -208,7 +248,7 @@ const AppointmentCard = ({
     detailItems.push(
       <Tooltip
         key="bloodType"
-        label={t.tooltips.bloodType}
+        label={text("tooltips.bloodType")}
         placement="top"
         hasArrow>
         <Flex gap={0.5} align="center">
@@ -227,19 +267,49 @@ const AppointmentCard = ({
     );
   }
 
-  if (createdAt) {
+  if (isAdmin && createdAt) {
     detailItems.push(
       <Tooltip
         key="createdAt"
-        label={t.tooltips.createdAt}
+        label={text("tooltips.createdAt")}
         placement="top"
         hasArrow>
-        <Flex gap={0.5} align="center">
-          <Icon as={FiClock} boxSize={2.5} color="text-muted" />
-          <Text fontSize="10px" color="text-muted" whiteSpace="nowrap">
-            {formatDate(createdAt)} {formatTime(createdAt)}
+        <Badge
+          bg="purple.500"
+          color="white"
+          fontSize="10px"
+          px={1.5}
+          py={0.5}
+          borderRadius="sm">
+          <Flex gap={0.5} align="center">
+            <Icon as={FiClock} boxSize={2.5} />
+            <Text fontSize="10px" color="white">
+              {formatDate(createdAt)} {formatTime(createdAt)}
+            </Text>
+          </Flex>
+        </Badge>
+      </Tooltip>,
+    );
+  }
+
+  if (isAdmin && createdBy) {
+    const isCreatorAdmin = createdBy === "admin";
+    const label = isCreatorAdmin
+      ? text("tooltips.admin")
+      : text("tooltips.user");
+    const bgColor = isCreatorAdmin ? "blue.500" : "gray.500";
+
+    detailItems.push(
+      <Tooltip
+        key="createdBy"
+        label={text("tooltips.createdBy")}
+        placement="top"
+        hasArrow>
+        <Badge bg={bgColor} fontSize="10px" px={1.5} py={0.5} borderRadius="sm">
+          <Text fontSize="10px" color="white">
+            {label}
           </Text>
-        </Flex>
+        </Badge>
       </Tooltip>,
     );
   }
@@ -248,7 +318,7 @@ const AppointmentCard = ({
     detailItems.push(
       <Tooltip
         key="appointment"
-        label={t.tooltips.appointmentDateTime}
+        label={text("tooltips.appointmentDateTime")}
         placement="top"
         hasArrow>
         <Flex gap={0.5} align="center">
@@ -280,8 +350,7 @@ const AppointmentCard = ({
         boxShadow: "md",
         borderColor: "brand.300",
       }}
-      w="100%"
-      dir={language === "ar" ? "rtl" : "ltr"}>
+      w="100%">
       <Box pb={1.5} mb={1.5} borderBottom="1px solid" borderColor={borderColor}>
         <Flex justify="space-between" align="center" gap={2}>
           <Box flex="1" minW={0}>
@@ -299,28 +368,28 @@ const AppointmentCard = ({
 
           {showActions && (
             <Flex flexShrink={0}>
-              <Tooltip label={t.tooltips.edit} placement="top" hasArrow>
+              <Tooltip label={text("tooltips.edit")} placement="top" hasArrow>
                 <IconButton
-                  aria-label={t.editAppointment}
+                  aria-label={text("editAppointment")}
                   icon={<FiEdit size={12} />}
                   size="xs"
                   variant="ghost"
                   color={editIconColor}
                   _hover={{ bg: editIconHoverBg }}
-                  onClick={() => onEdit && onEdit(patient)}
+                  onClick={() => onEdit(patient)}
                   minW="22px"
                   h="22px"
                 />
               </Tooltip>
-              <Tooltip label={t.tooltips.delete} placement="top" hasArrow>
+              <Tooltip label={text("tooltips.delete")} placement="top" hasArrow>
                 <IconButton
-                  aria-label={t.deleteAppointment}
+                  aria-label={text("deleteAppointment")}
                   icon={<FiTrash2 size={12} />}
                   size="xs"
                   variant="ghost"
                   color={deleteIconColor}
                   _hover={{ bg: deleteIconHoverBg }}
-                  onClick={() => onDelete && onDelete(patient.id, status)}
+                  onClick={() => onDelete(patient.id, status)}
                   minW="22px"
                   h="22px"
                 />
@@ -330,7 +399,10 @@ const AppointmentCard = ({
         </Flex>
 
         <Flex gap={0.5} flexWrap="wrap" mt={0.5}>
-          <Tooltip label={t.tooltips.appointmentId} placement="top" hasArrow>
+          <Tooltip
+            label={text("tooltips.appointmentId")}
+            placement="top"
+            hasArrow>
             <Badge
               bg="gray.200"
               color="gray.700"
@@ -345,7 +417,7 @@ const AppointmentCard = ({
             </Badge>
           </Tooltip>
 
-          <Tooltip label={t.tooltips.status} placement="top" hasArrow>
+          <Tooltip label={text("tooltips.status")} placement="top" hasArrow>
             <Badge
               bg={getStatusBg(status)}
               color="white"
@@ -358,7 +430,7 @@ const AppointmentCard = ({
           </Tooltip>
 
           {patient.appointmentType && (
-            <Tooltip label={t.tooltips.type} placement="top" hasArrow>
+            <Tooltip label={text("tooltips.type")} placement="top" hasArrow>
               <Badge
                 bg={getAppointmentTypeBg(patient.appointmentType)}
                 color="white"

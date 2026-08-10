@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   HStack,
@@ -14,6 +14,7 @@ import {
   InputGroup,
   InputLeftElement,
   VStack,
+  Spinner,
 } from "@chakra-ui/react";
 import { FiPlus, FiRefreshCw, FiSearch, FiX, FiFilter } from "react-icons/fi";
 import useAppStore from "../../store/store";
@@ -28,6 +29,9 @@ import showToast from "../../components/common/toast";
 const DashBoardPage = () => {
   const { language } = useAppStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState("all");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,116 +44,41 @@ const DashBoardPage = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedEditPatient, setSelectedEditPatient] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
   const [patients, setPatients] = useState({
-    upcoming: [
-      {
-        id: helpers.generateId(),
-        name: "أحمد محمد",
-        phone: "0555123456",
-        bloodType: "O+",
-        appointmentType: "مسبق",
-        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
-          .toISOString()
-          .split("T")[0],
-        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
-          .toTimeString()
-          .slice(0, 5),
-        appointmentDate: "2026-08-10",
-        appointmentTime: "10:30",
-        status: "upcoming",
-      },
-      {
-        id: helpers.generateId(),
-        name: "سارة علي",
-        phone: "0555789012",
-        bloodType: "A-",
-        appointmentType: "مباشر",
-        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 12)
-          .toISOString()
-          .split("T")[0],
-        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 12)
-          .toTimeString()
-          .slice(0, 5),
-        appointmentDate: "2026-08-10",
-        appointmentTime: "14:00",
-        status: "upcoming",
-      },
-      {
-        id: helpers.generateId(),
-        name: "خالد عبدالله",
-        phone: "0555345678",
-        bloodType: "B+",
-        appointmentType: "مسبق",
-        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 5)
-          .toISOString()
-          .split("T")[0],
-        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 5)
-          .toTimeString()
-          .slice(0, 5),
-        appointmentDate: "2026-08-11",
-        appointmentTime: "09:00",
-        status: "upcoming",
-      },
-    ],
-    waiting: [
-      {
-        id: helpers.generateId(),
-        name: "نورة سعد",
-        phone: "0555901234",
-        bloodType: "AB+",
-        appointmentType: "إسعافي",
-        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 3)
-          .toISOString()
-          .split("T")[0],
-        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 3)
-          .toTimeString()
-          .slice(0, 5),
-        appointmentDate: "2026-08-09",
-        appointmentTime: "11:30",
-        status: "waiting",
-      },
-      {
-        id: helpers.generateId(),
-        name: "فاطمة حسن",
-        phone: "0555456789",
-        bloodType: "A+",
-        appointmentType: "مباشر",
-        createdDate: new Date(Date.now() - 1000 * 60 * 60 * 24)
-          .toISOString()
-          .split("T")[0],
-        createdTime: new Date(Date.now() - 1000 * 60 * 60 * 24)
-          .toTimeString()
-          .slice(0, 5),
-        appointmentDate: "2026-08-09",
-        appointmentTime: "15:45",
-        status: "waiting",
-      },
-    ],
-    current: [
-      {
-        id: helpers.generateId(),
-        name: "محمد إبراهيم",
-        phone: "0555567890",
-        bloodType: "A+",
-        appointmentType: "مسبق",
-        createdDate: new Date(Date.now() - 1000 * 60 * 30)
-          .toISOString()
-          .split("T")[0],
-        createdTime: new Date(Date.now() - 1000 * 60 * 30)
-          .toTimeString()
-          .slice(0, 5),
-        appointmentDate: "2026-08-09",
-        appointmentTime: "16:00",
-        status: "current",
-      },
-    ],
+    upcoming: [],
+    waiting: [],
+    current: [],
   });
+
+  const withLoading = async (callback, setLoading, duration = 800) => {
+    setLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, duration));
+    try {
+      await callback();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      const allAppointments = helpers.getAppointments();
+
+      setPatients({
+        upcoming: allAppointments.filter((p) => p.status === "upcoming"),
+        waiting: allAppointments.filter((p) => p.status === "waiting"),
+        current: allAppointments.filter((p) => p.status === "current"),
+      });
+
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, []);
 
   const words = {
     ar: {
@@ -232,21 +161,24 @@ const DashBoardPage = () => {
     },
   };
 
-  const t = words[language] || words.ar;
+  const text = (key) => {
+    return words[language]?.[key] || words.ar[key] || key;
+  };
+
   const isRTL = language === "ar";
 
   const statusFilterOptions = [
-    { value: "all", label: t.all },
-    { value: "upcoming", label: t.upcoming },
-    { value: "waiting", label: t.waiting },
-    { value: "current", label: t.current },
+    { value: "all", label: text("all") },
+    { value: "upcoming", label: text("upcoming") },
+    { value: "waiting", label: text("waiting") },
+    { value: "current", label: text("current") },
   ];
 
   const typeFilterOptions = [
-    { value: "all", label: t.all },
-    { value: "مسبق", label: t.scheduled },
-    { value: "مباشر", label: t.direct },
-    { value: "إسعافي", label: t.emergency },
+    { value: "all", label: text("all") },
+    { value: "scheduled", label: text("scheduled") },
+    { value: "direct", label: text("direct") },
+    { value: "emergency", label: text("emergency") },
   ];
 
   const getAllPatients = () => {
@@ -277,11 +209,30 @@ const DashBoardPage = () => {
     return allPatients;
   };
 
-  const handleApplyFilters = () => {
-    setSearchTerm(tempSearchTerm);
-    setSelectedStatusFilter(tempStatusFilter);
-    setSelectedTypeFilter(tempTypeFilter);
-    showToast.success(t.filterApplied, t.filterAppliedDesc);
+  const handleApplyFilters = async () => {
+    await withLoading(
+      async () => {
+        const filtered = helpers.filterAppointments({
+          status: tempStatusFilter === "all" ? undefined : tempStatusFilter,
+          type: tempTypeFilter === "all" ? undefined : tempTypeFilter,
+          name: tempSearchTerm || undefined,
+        });
+
+        setSearchTerm(tempSearchTerm);
+        setSelectedStatusFilter(tempStatusFilter);
+        setSelectedTypeFilter(tempTypeFilter);
+
+        setPatients({
+          upcoming: filtered.filter((p) => p.status === "upcoming"),
+          waiting: filtered.filter((p) => p.status === "waiting"),
+          current: filtered.filter((p) => p.status === "current"),
+        });
+
+        showToast.success(text("filterApplied"), text("filterAppliedDesc"));
+      },
+      setIsFiltering,
+      600,
+    );
   };
 
   const getStatusCount = (status) => {
@@ -289,33 +240,69 @@ const DashBoardPage = () => {
   };
 
   const getEmergencyCount = () => {
-    return getAllPatients().filter((p) => p.appointmentType === "إسعافي")
+    return getAllPatients().filter((p) => p.appointmentType === "emergency")
       .length;
   };
 
-  const handleRefresh = () => {
-    showToast.success(t.refreshSuccess, t.refreshSuccessDesc);
+  const handleRefresh = async () => {
+    setPatients({
+      upcoming: [],
+      waiting: [],
+      current: [],
+    });
+    await withLoading(
+      async () => {
+        const allAppointments = helpers.getAppointments();
+        setPatients({
+          upcoming: allAppointments.filter((p) => p.status === "upcoming"),
+          waiting: allAppointments.filter((p) => p.status === "waiting"),
+          current: allAppointments.filter((p) => p.status === "current"),
+        });
+        showToast.success(text("refreshSuccess"), text("refreshSuccessDesc"));
+      },
+      setIsRefreshing,
+      700,
+    );
   };
 
-  const handleClearFilter = () => {
-    setTempStatusFilter("all");
-    setTempTypeFilter("all");
-    setTempSearchTerm("");
-    setSelectedStatusFilter("all");
-    setSelectedTypeFilter("all");
-    setSearchTerm("");
-    showToast.info(t.filterCleared, t.filterClearedDesc);
+  const handleClearFilter = async () => {
+    await withLoading(
+      async () => {
+        setTempStatusFilter("all");
+        setTempTypeFilter("all");
+        setTempSearchTerm("");
+        setSelectedStatusFilter("all");
+        setSelectedTypeFilter("all");
+        setSearchTerm("");
+
+        const allAppointments = helpers.getAppointments();
+        setPatients({
+          upcoming: allAppointments.filter((p) => p.status === "upcoming"),
+          waiting: allAppointments.filter((p) => p.status === "waiting"),
+          current: allAppointments.filter((p) => p.status === "current"),
+        });
+
+        showToast.info(text("filterCleared"), text("filterClearedDesc"));
+      },
+      setIsClearing,
+      500,
+    );
   };
 
   const handleMoveToCurrent = (patientId) => {
-    const patient = patients.waiting.find((p) => p.id === patientId);
-    if (patient) {
-      setPatients((prev) => ({
-        ...prev,
-        waiting: prev.waiting.filter((p) => p.id !== patientId),
-        current: [...prev.current, { ...patient, status: "current" }],
-      }));
-      showToast.success(t.moveSuccess, t.moveSuccessDesc(patient.name));
+    const updated = helpers.moveToCurrent(patientId);
+
+    if (updated) {
+      const allAppointments = helpers.getAppointments();
+      setPatients({
+        upcoming: allAppointments.filter((p) => p.status === "upcoming"),
+        waiting: allAppointments.filter((p) => p.status === "waiting"),
+        current: allAppointments.filter((p) => p.status === "current"),
+      });
+      showToast.success(
+        text("moveSuccess"),
+        text("moveSuccessDesc")(updated.name),
+      );
     }
   };
 
@@ -330,16 +317,22 @@ const DashBoardPage = () => {
 
   const handleConfirmDelete = () => {
     if (selectedPatient && selectedStatus) {
-      setPatients((prev) => ({
-        ...prev,
-        [selectedStatus]: prev[selectedStatus].filter(
-          (p) => p.id !== selectedPatient.id,
-        ),
-      }));
-      showToast.error(
-        t.deleteSuccess,
-        t.deleteSuccessDesc(selectedPatient.name),
-      );
+      const deleted = helpers.deleteAppointment(selectedPatient.id);
+
+      if (deleted) {
+        const allAppointments = helpers.getAppointments();
+        setPatients({
+          upcoming: allAppointments.filter((p) => p.status === "upcoming"),
+          waiting: allAppointments.filter((p) => p.status === "waiting"),
+          current: allAppointments.filter((p) => p.status === "current"),
+        });
+
+        showToast.error(
+          text("deleteSuccess"),
+          text("deleteSuccessDesc")(selectedPatient.name),
+        );
+      }
+
       setIsDeleteModalOpen(false);
       setSelectedPatient(null);
       setSelectedStatus("");
@@ -347,53 +340,52 @@ const DashBoardPage = () => {
   };
 
   const handleAddPatient = (newPatient) => {
-    const now = new Date();
-    const patient = {
-      id: helpers.generateId(),
-      ...newPatient,
-      createdAt: now.toISOString(),
-      createdDate: now.toISOString().split("T")[0],
-      createdTime: now.toTimeString().slice(0, 5),
+    const appointmentData = {
+      name: newPatient.name,
+      phone: newPatient.phone,
+      bloodType: newPatient.bloodType,
+      appointmentType: newPatient.appointmentType,
+      appointmentDate: newPatient.appointmentDate,
+      appointmentTime: newPatient.appointmentTime,
       status: "upcoming",
     };
 
+    const created = helpers.createAppointment(appointmentData, "admin");
+
     setPatients((prev) => ({
       ...prev,
-      upcoming: [patient, ...prev.upcoming],
+      upcoming: [created, ...prev.upcoming],
     }));
 
-    showToast.success(t.addSuccess, t.addSuccessDesc(patient.name));
+    showToast.success(text("addSuccess"), text("addSuccessDesc")(created.name));
   };
 
-  // ===== دوال التعديل =====
   const handleEditClick = (patient) => {
     setSelectedEditPatient(patient);
     setIsEditModalOpen(true);
   };
 
   const handleEditPatient = (updatedPatient) => {
-    // تحديث المريض في القائمة
-    setPatients((prev) => {
-      const newPatients = { ...prev };
-      // البحث عن المريض في جميع القوائم
-      for (const status of ["upcoming", "waiting", "current"]) {
-        const index = newPatients[status].findIndex(
-          (p) => p.id === selectedEditPatient.id,
-        );
-        if (index !== -1) {
-          newPatients[status][index] = {
-            ...newPatients[status][index],
-            ...updatedPatient,
-          };
-          break;
-        }
-      }
-      return newPatients;
-    });
+    const updated = helpers.updateAppointment(
+      selectedEditPatient.id,
+      updatedPatient,
+    );
 
-    showToast.success(t.editSuccess, t.editSuccessDesc(updatedPatient.name));
-    setIsEditModalOpen(false);
-    setSelectedEditPatient(null);
+    if (updated) {
+      const allAppointments = helpers.getAppointments();
+      setPatients({
+        upcoming: allAppointments.filter((p) => p.status === "upcoming"),
+        waiting: allAppointments.filter((p) => p.status === "waiting"),
+        current: allAppointments.filter((p) => p.status === "current"),
+      });
+
+      showToast.success(
+        text("editSuccess"),
+        text("editSuccessDesc")(updated.name),
+      );
+      setIsEditModalOpen(false);
+      setSelectedEditPatient(null);
+    }
   };
 
   if (isLoading) {
@@ -425,10 +417,10 @@ const DashBoardPage = () => {
           w="100%">
           <VStack textAlign={"start"} spacing={0} flex={1}>
             <Text fontSize="xl" fontWeight="bold" color="text-primary" w="100%">
-              {t.title}
+              {text("title")}
             </Text>
             <Text fontSize="sm" color="text-muted" w="100%">
-              {t.subtitle}
+              {text("subtitle")}
             </Text>
           </VStack>
 
@@ -437,7 +429,7 @@ const DashBoardPage = () => {
             display="flex"
             justifyContent={isRTL ? "flex-start" : "flex-end"}>
             <Tooltip
-              label={t.addTooltip}
+              label={text("addTooltip")}
               placement={isRTL ? "bottom-start" : "bottom"}
               hasArrow>
               <Button
@@ -450,7 +442,7 @@ const DashBoardPage = () => {
                 onClick={() => setIsAddModalOpen(true)}
                 minW={{ base: "100%", md: "140px" }}
                 whiteSpace="nowrap">
-                {t.addAppointment}
+                {text("addAppointment")}
               </Button>
             </Tooltip>
           </Box>
@@ -478,7 +470,7 @@ const DashBoardPage = () => {
               py={0.5}
               borderRadius="md"
               boxShadow="sm">
-              {t.upcoming}: {getStatusCount("upcoming")}
+              {text("upcoming")}: {getStatusCount("upcoming")}
             </Badge>
             <Badge
               bg="orange.600"
@@ -488,7 +480,7 @@ const DashBoardPage = () => {
               py={0.5}
               borderRadius="md"
               boxShadow="sm">
-              {t.waiting}: {getStatusCount("waiting")}
+              {text("waiting")}: {getStatusCount("waiting")}
             </Badge>
             <Badge
               bg="green.600"
@@ -498,7 +490,7 @@ const DashBoardPage = () => {
               py={0.5}
               borderRadius="md"
               boxShadow="sm">
-              {t.current}: {getStatusCount("current")}
+              {text("current")}: {getStatusCount("current")}
             </Badge>
             <Badge
               bg="red.600"
@@ -508,7 +500,7 @@ const DashBoardPage = () => {
               py={0.5}
               borderRadius="md"
               boxShadow="sm">
-              {t.emergency}: {getEmergencyCount()}
+              {text("emergency")}: {getEmergencyCount()}
             </Badge>
             <Badge
               bg="purple.600"
@@ -518,7 +510,7 @@ const DashBoardPage = () => {
               py={0.5}
               borderRadius="md"
               boxShadow="sm">
-              {t.total}: {totalCount}
+              {text("total")}: {totalCount}
             </Badge>
           </HStack>
 
@@ -527,7 +519,7 @@ const DashBoardPage = () => {
             flexWrap="wrap"
             direction={isRTL ? "row-reverse" : "row"}>
             <Tooltip
-              label={t.searchTooltip}
+              label={text("searchTooltip")}
               placement={isRTL ? "bottom-start" : "bottom"}
               hasArrow>
               <InputGroup size="xs" w={{ base: "120px", md: "160px" }}>
@@ -535,7 +527,7 @@ const DashBoardPage = () => {
                   <FiSearch size={14} />
                 </InputLeftElement>
                 <Input
-                  placeholder={t.searchPlaceholder}
+                  placeholder={text("searchPlaceholder")}
                   value={tempSearchTerm}
                   onChange={(e) => setTempSearchTerm(e.target.value)}
                   borderRadius="md"
@@ -546,7 +538,7 @@ const DashBoardPage = () => {
             </Tooltip>
 
             <Tooltip
-              label={t.filterByStatus}
+              label={text("filterByStatus")}
               placement={isRTL ? "bottom-start" : "bottom"}
               hasArrow>
               <Select
@@ -565,7 +557,7 @@ const DashBoardPage = () => {
             </Tooltip>
 
             <Tooltip
-              label={t.filterByType}
+              label={text("filterByType")}
               placement={isRTL ? "bottom-start" : "bottom"}
               hasArrow>
               <Select
@@ -584,7 +576,7 @@ const DashBoardPage = () => {
             </Tooltip>
 
             <Tooltip
-              label={t.applyTooltip}
+              label={text("applyTooltip")}
               placement={isRTL ? "bottom-start" : "bottom"}
               hasArrow>
               <Button
@@ -594,19 +586,23 @@ const DashBoardPage = () => {
                 bg="brand.500"
                 color="white"
                 _hover={{ bg: "brand.600" }}
-                onClick={handleApplyFilters}>
-                {t.applyFilter}
+                onClick={handleApplyFilters}
+                isLoading={isFiltering}
+                loadingText="..."
+                minW="70px"
+                isDisabled={isFiltering}>
+                {text("applyFilter")}
               </Button>
             </Tooltip>
 
             {isFilterActive && (
               <Tooltip
-                label={t.clearTooltip}
+                label={text("clearTooltip")}
                 placement={isRTL ? "bottom-start" : "bottom"}
                 hasArrow>
                 <IconButton
-                  aria-label={t.clearFilter}
-                  icon={<FiX />}
+                  aria-label={text("clearFilter")}
+                  icon={isClearing ? <Spinner size="xs" /> : <FiX />}
                   size="xs"
                   bg="#f500009f"
                   _dark={{ bg: "#f500009f" }}
@@ -616,22 +612,24 @@ const DashBoardPage = () => {
                     _dark: { bg: "red" },
                   }}
                   onClick={handleClearFilter}
+                  isDisabled={isClearing}
                 />
               </Tooltip>
             )}
 
             <Tooltip
-              label={t.refreshTooltip}
+              label={text("refreshTooltip")}
               placement={isRTL ? "bottom-start" : "bottom"}
               hasArrow>
               <IconButton
-                aria-label={t.refresh}
-                icon={<FiRefreshCw />}
+                aria-label={text("refresh")}
+                icon={isRefreshing ? <Spinner size="xs" /> : <FiRefreshCw />}
                 size="xs"
                 bg="green.500"
                 color="white"
                 _hover={{ bg: "green.600" }}
                 onClick={handleRefresh}
+                isDisabled={isRefreshing}
               />
             </Tooltip>
           </HStack>
@@ -648,10 +646,11 @@ const DashBoardPage = () => {
               key={patient.id}
               patient={patient}
               status={patient.status}
+              isAdmin={true}
               onMoveToCurrent={handleMoveToCurrent}
               onDelete={handleDeleteClick}
               onEdit={handleEditClick}
-              showActions={patient.status !== "current"}
+              showActions={true}
             />
           ))
         ) : (
@@ -664,7 +663,7 @@ const DashBoardPage = () => {
             border="1px solid"
             borderColor="border-color">
             <Text color="text-muted" fontSize="lg">
-              {t.noPatients}
+              {text("noPatients")}
             </Text>
           </Box>
         )}

@@ -55,7 +55,9 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
     },
   };
 
-  const t = words[language] || words.ar;
+  const text = (key) => {
+    return words[language]?.[key] || words.ar[key] || key;
+  };
 
   const handleDelete = () => {
     if (!isConfirmed) {
@@ -99,20 +101,28 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
         p={2}
         position="relative">
         <IconButton
-          aria-label={t.close}
+          aria-label={text("close")}
           icon={<FiX />}
-          size="sm"
+          size="xs"
           variant="ghost"
           position="absolute"
-          top={3}
-          sx={language === "en" ? { right: 3 } : { left: 3 }}
+          top={2}
+          right={2}
           onClick={handleClose}
           color="text-muted"
           _hover={{ bg: "bg-hover" }}
           zIndex={1}
+          w="28px"
+          h="28px"
+          minW="28px"
         />
 
-        <ModalHeader borderBottom="1px solid" borderColor="border-color" pb={4}>
+        <ModalHeader
+          borderBottom="1px solid"
+          borderColor="border-color"
+          pb={3}
+          pr={8}
+          flexShrink={0}>
           <Flex gap={3} align="center">
             <Box
               p={2}
@@ -120,20 +130,20 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
               _dark={{ bg: "red.900" }}
               borderRadius="full"
               flexShrink={0}>
-              <Icon as={FiAlertTriangle} color="red.500" w={6} h={6} />
+              <Icon as={FiAlertTriangle} color="red.500" w={5} h={5} />
             </Box>
             <Box flex="1">
-              <Text fontSize="lg" fontWeight="bold" color="text-primary">
-                {t.title}
+              <Text fontSize="md" fontWeight="bold" color="text-primary">
+                {text("title")}
               </Text>
               <Text fontSize="sm" color="text-muted">
-                {t.subtitle}
+                {text("subtitle")}
               </Text>
             </Box>
           </Flex>
         </ModalHeader>
 
-        <ModalBody py={6}>
+        <ModalBody py={5}>
           <VStack spacing={4} align="stretch">
             <Box
               p={4}
@@ -142,21 +152,35 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
               border="1px solid"
               borderColor="border-color">
               <Text fontSize="xs" color="text-muted" fontWeight="500" mb={2}>
-                {t.patientInfo}
+                {text("patientInfo")}
               </Text>
               <Flex gap={3} align="center">
-                <Icon as={FiUser} color="brand.500" flexShrink={0} />
-                <Text fontWeight="600" color="text-primary" isTruncated>
+                <Icon
+                  as={FiUser}
+                  color="brand.500"
+                  flexShrink={0}
+                  boxSize={4}
+                />
+                <Text
+                  fontWeight="600"
+                  color="text-primary"
+                  isTruncated
+                  fontSize="sm">
                   {patient.name}
                 </Text>
               </Flex>
               <Flex gap={4} mt={2} flexWrap="wrap">
                 <Text fontSize="sm" color="text-muted">
-                  {t.id}: {patient.id?.slice(0, 8)}
+                  {text("id")}: {patient.id?.slice(0, 8)}
                 </Text>
                 {patient.phone && (
-                  <Badge colorScheme="brand" variant="subtle">
-                    {t.phone}: {patient.phone}
+                  <Badge
+                    colorScheme="brand"
+                    variant="subtle"
+                    fontSize="xs"
+                    px={2}
+                    py={0.5}>
+                    {text("phone")}: {patient.phone}
                   </Badge>
                 )}
               </Flex>
@@ -170,8 +194,8 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
               border="1px solid"
               borderColor="red.200">
               <Text fontSize="sm" color="red.600" _dark={{ color: "red.300" }}>
-                <Icon as={FiAlertTriangle} />
-                {t.warning}
+                <Icon as={FiAlertTriangle} mr={2} boxSize={4} />
+                {text("warning")}
               </Text>
             </Box>
 
@@ -185,24 +209,34 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
                 isChecked={isConfirmed}
                 onChange={(e) => setIsConfirmed(e.target.checked)}
                 colorScheme="red"
-                size="lg"
+                size="md"
                 spacing={3}>
                 <Text fontSize="sm" color="text-muted">
-                  {t.confirmText}
+                  {text("confirmText")}
                 </Text>
               </Checkbox>
             </Box>
           </VStack>
         </ModalBody>
 
-        <ModalFooter borderTop="1px solid" borderColor="border-color" pt={4}>
+        <ModalFooter
+          borderTop="1px solid"
+          borderColor="border-color"
+          pt={4}
+          pb={4}
+          flexShrink={0}>
           <Flex gap={3}>
             <Button
               variant="outline"
               onClick={handleClose}
               isDisabled={isDeleting}
-              size="md">
-              {t.cancel}
+              size="sm"
+              h="32px"
+              fontSize="sm"
+              borderRadius="md"
+              borderColor="border-color"
+              _hover={{ bg: "bg-hover" }}>
+              {text("cancel")}
             </Button>
             <Button
               sx={{
@@ -211,12 +245,17 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, patient }) => {
                 _hover: { bg: "#c82333 !important" },
                 _active: { bg: "#bd2130 !important" },
               }}
+              leftIcon={<FiAlertTriangle size="14px" />}
               onClick={handleDelete}
               isLoading={isDeleting}
-              loadingText={t.deleting}
+              loadingText={text("deleting")}
               isDisabled={!isConfirmed}
-              size="md">
-              {t.confirmDelete}
+              size="sm"
+              h="32px"
+              fontSize="sm"
+              borderRadius="md"
+              px={4}>
+              {text("confirmDelete")}
             </Button>
           </Flex>
         </ModalFooter>

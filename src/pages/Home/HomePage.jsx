@@ -1,4 +1,3 @@
-// src/pages/Home/HomePage.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -38,7 +37,6 @@ const HomePage = () => {
   const { language } = useAppStore();
   const isMobile = useBreakpointValue({ base: true, md: false });
   const [isLoading, setIsLoading] = React.useState(true);
-  const isRTL = language === "ar";
 
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
@@ -132,37 +130,39 @@ const HomePage = () => {
     },
   };
 
-  const t = words[language] || words.ar;
+  const text = (key) => {
+    return words[language]?.[key] || words.ar[key] || key;
+  };
 
   const services = [
-    { icon: FiUser, label: t.services.general },
-    { icon: FiHeart, label: t.services.dental },
-    { icon: FiStar, label: t.services.pediatrics },
-    { icon: FiAward, label: t.services.cardiology },
+    { icon: FiUser, label: text("services.general") },
+    { icon: FiHeart, label: text("services.dental") },
+    { icon: FiStar, label: text("services.pediatrics") },
+    { icon: FiAward, label: text("services.cardiology") },
   ];
 
   const features = [
-    { icon: FiAward, label: t.features.experience },
-    { icon: FiClock, label: t.features.modern },
-    { icon: FiHeart, label: t.features.care },
-    { icon: FiBriefcase, label: t.features.comfort },
+    { icon: FiAward, label: text("features.experience") },
+    { icon: FiClock, label: text("features.modern") },
+    { icon: FiHeart, label: text("features.care") },
+    { icon: FiBriefcase, label: text("features.comfort") },
   ];
 
   const stats = [
-    { value: "5000+", label: t.stats.patients },
-    { value: "15+", label: t.stats.doctors },
-    { value: "10+", label: t.stats.years },
-    { value: "25+", label: t.stats.awards },
+    { value: "5000+", label: text("stats.patients") },
+    { value: "15+", label: text("stats.doctors") },
+    { value: "10+", label: text("stats.years") },
+    { value: "25+", label: text("stats.awards") },
   ];
 
   const workingDays = [
-    { day: t.days.sat, time: t.time },
-    { day: t.days.sun, time: t.time },
-    { day: t.days.mon, time: t.time },
-    { day: t.days.tue, time: t.time },
-    { day: t.days.wed, time: t.time },
-    { day: t.days.thu, time: t.time },
-    { day: t.days.fri, time: t.timeFri, isClosed: true },
+    { day: text("days.sat"), time: text("time") },
+    { day: text("days.sun"), time: text("time") },
+    { day: text("days.mon"), time: text("time") },
+    { day: text("days.tue"), time: text("time") },
+    { day: text("days.wed"), time: text("time") },
+    { day: text("days.thu"), time: text("time") },
+    { day: text("days.fri"), time: text("timeFri"), isClosed: true },
   ];
 
   if (isLoading) return <SkeletonHome />;
@@ -192,27 +192,27 @@ const HomePage = () => {
               fontWeight="bold"
               color="brand.500"
               lineHeight="1.2">
-              {t.clinicName}
+              {text("clinicName")}
             </Text>
             <Text
               fontSize={{ base: "xl", sm: "2xl", md: "3xl", lg: "4xl" }}
               fontWeight="bold"
               color="text-primary"
               lineHeight="1.2">
-              {t.title}
+              {text("title")}
             </Text>
             <Text
               fontSize={{ base: "sm", md: "md", lg: "lg" }}
               color="text-secondary"
               fontWeight="medium">
-              {t.subtitle}
+              {text("subtitle")}
             </Text>
             <Text
               fontSize={{ base: "sm", md: "md" }}
               color="text-muted"
               lineHeight="1.8"
               maxW="600px">
-              {t.description}
+              {text("description")}
             </Text>
 
             <HStack
@@ -231,7 +231,7 @@ const HomePage = () => {
                 leftIcon={<FiCalendar />}
                 onClick={() => navigate("/add-appointment")}
                 fontSize={{ base: "sm", md: "md" }}>
-                {t.bookAppointment}
+                {text("bookAppointment")}
               </Button>
               <Button
                 size={{ base: "md", md: "lg" }}
@@ -241,7 +241,7 @@ const HomePage = () => {
                 _hover={{ bg: "bg-hover" }}
                 onClick={() => navigate("/about")}
                 fontSize={{ base: "sm", md: "md" }}>
-                {t.aboutUs}
+                {text("aboutUs")}
               </Button>
             </HStack>
           </VStack>
@@ -314,7 +314,7 @@ const HomePage = () => {
             fontWeight="bold"
             color="text-primary"
             mb={4}>
-            {t.ourServices}
+            {text("ourServices")}
           </Text>
           <VStack align="stretch" spacing={{ base: 2, md: 3 }}>
             {services.map((service, index) => (
@@ -350,7 +350,7 @@ const HomePage = () => {
             fontWeight="bold"
             color="text-primary"
             mb={4}>
-            {t.whyUs}
+            {text("whyUs")}
           </Text>
           <VStack align="stretch" spacing={{ base: 2, md: 3 }}>
             {features.map((feature, index) => (
@@ -390,7 +390,7 @@ const HomePage = () => {
           color="text-primary"
           mb={4}
           textAlign="center">
-          {t.workingHours}
+          {text("workingHours")}
         </Text>
 
         <TableContainer
@@ -408,16 +408,16 @@ const HomePage = () => {
                   fontSize="sm"
                   fontWeight="bold"
                   py={3}>
-                  {t.day}
+                  {text("day")}
                 </Th>
                 <Th
                   color="text-primary"
                   borderColor="border-color"
-                  textAlign={isRTL ? "right" : "center"}
+                  textAlign="center"
                   fontSize="sm"
                   fontWeight="bold"
                   py={3}>
-                  {t.workingHours}
+                  {text("workingHours")}
                 </Th>
               </Tr>
             </Thead>
@@ -446,7 +446,7 @@ const HomePage = () => {
                     )}
                   </Td>
                   <Td
-                    textAlign={isRTL ? "right" : "center"}
+                    textAlign="center"
                     color={item.isClosed ? "error.500" : "text-secondary"}
                     borderColor="border-color"
                     py={3}
